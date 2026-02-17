@@ -923,11 +923,17 @@
 
         function enablePrivateSections() {
             document.querySelectorAll('.nav-btn.private').forEach(btn => {
-                btn.onclick = function() {
+                btn.onclick = function(e) {
                     const section = this.textContent.includes('Ejecución') ? 'ejecucion' :
                                    this.textContent.includes('Informes') ? 'informes' :
                                    this.textContent.includes('Supervisión') ? 'supervision' : 'cuenta';
-                    showSection(section);
+                    // Hide all sections
+                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                    // Remove active from all nav buttons
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    // Show selected section and mark button active
+                    document.getElementById(section).classList.add('active');
+                    this.classList.add('active');
                 };
             });
         }

@@ -456,6 +456,10 @@
             <!-- Hallazgos Negativos -->
             <div class="form-section">
                 <h2>⚠️ Hallazgos Negativos / Riesgos</h2>
+                <div class="form-group">
+                    <label>Describe el hallazgo negativo o condición de riesgo:</label>
+                    <textarea id="hallazgos-negativos-input" placeholder="Ejemplo: Se encontró extintor con fecha de recarga vencida en el piso 3..."></textarea>
+                </div>
                 <button class="btn btn-primary" onclick="agregarHallazgoNegativo()">+ Agregar Hallazgo Negativo</button>
                 <div id="hallazgos-negativos-lista" class="hallazgos-container"></div>
             </div>
@@ -612,9 +616,11 @@
         }
 
         function agregarHallazgoNegativo() {
+            const textoInicial = document.getElementById('hallazgos-negativos-input').value.trim();
+
             contadorHallazgosNegativos++;
             const id = Date.now();
-            
+
             const container = document.getElementById('hallazgos-negativos-lista');
             const item = document.createElement('div');
             item.className = 'hallazgo-item negativo';
@@ -628,7 +634,7 @@
                             <option value="medio" selected>Medio</option>
                             <option value="bajo">Bajo</option>
                         </select>
-                        <button class="btn" onclick="eliminarHallazgoNegativo('${id}')" 
+                        <button class="btn" onclick="eliminarHallazgoNegativo('${id}')"
                                 style="background: #dc3545; color: white; padding: 5px 15px;">
                             Eliminar
                         </button>
@@ -636,7 +642,7 @@
                 </div>
                 <div class="form-group" style="margin-top: 15px;">
                     <label>Descripción del hallazgo:</label>
-                    <textarea id="desc-${id}" placeholder="Describe el riesgo o condición insegura encontrada..."></textarea>
+                    <textarea id="desc-${id}" placeholder="Describe el riesgo o condición insegura encontrada...">${textoInicial}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Área/Ubicación:</label>
@@ -666,7 +672,10 @@
             `;
             
             container.appendChild(item);
-            
+
+            // Limpiar el campo de entrada
+            document.getElementById('hallazgos-negativos-input').value = '';
+
             hallazgosNegativos.push({ id: id });
             actualizarResumen();
         }

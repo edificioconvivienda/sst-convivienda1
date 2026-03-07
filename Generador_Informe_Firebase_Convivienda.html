@@ -1078,18 +1078,36 @@
             document.getElementById('previewModal').classList.remove('active');
         }
         
-        function imprimirInforme() {
-            window.print();
+        function registrarInformeFirebase(callback) {
+            try {
+                const ahora = new Date();
+                const yyyy = ahora.getFullYear();
+                const mm   = String(ahora.getMonth() + 1).padStart(2, '0');
+                const clave = `${yyyy}-${mm}`;
+                database.ref(`edificios/${EDIFICIO_ID}/informes/${clave}`).update({
+                    fecha: ahora.toISOString(),
+                    estado: 'generado',
+                    tipo: 'informe',
+                    mes: clave
+                }).then(() => {
+                    console.log(`✅ Informe ${clave} registrado en Firebase`);
+                    if (callback) callback();
+                }).catch(err => {
+                    console.warn('Error registrando informe en Firebase:', err);
+                    if (callback) callback();
+                });
+            } catch(e) {
+                console.warn('Firebase no disponible:', e);
+                if (callback) callback();
+            }
         }
-        
+
+        function imprimirInforme() {
+            registrarInformeFirebase(() => window.print());
+        }
+
         function generarPDF() {
-            alert('✅ Generando PDF del informe...\n\n' +
-                  'El archivo se descargará en formato PDF.\n' +
-                  '(Para implementación completa se necesita librería jsPDF o similar)');
-            
-            // Aquí iría la implementación con jsPDF
-            // Por ahora, se puede usar window.print() como alternativa
-            window.print();
+            registrarInformeFirebase(() => window.print());
         }
 
         // ============================================

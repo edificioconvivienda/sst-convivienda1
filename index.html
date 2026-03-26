@@ -127,6 +127,139 @@
         .stat-change.positive { background: #d1fae5; color: var(--success); }
         .stat-change.warning  { background: #fef3c7; color: #92400e; }
 
+        /* ═══════════════════════════════════════════════════════════
+           NUEVO: BANNER DE ALERTA MENSUAL
+           ═══════════════════════════════════════════════════════════ */
+        .alert-banner {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--warning);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .alert-banner.success {
+            border-left-color: var(--success);
+            background: linear-gradient(to right, #ecfdf5 0%, white 100%);
+        }
+        .alert-banner.danger {
+            border-left-color: var(--danger);
+            background: linear-gradient(to right, #fef2f2 0%, white 100%);
+        }
+        .alert-banner .icon { font-size: 2.5rem; }
+        .alert-banner .content { flex: 1; }
+        .alert-banner .title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .alert-banner .message {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           NUEVO: GRILLA MENSUAL PAT (tipo semáforo)
+           ═══════════════════════════════════════════════════════════ */
+        .pat-grid-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .pat-grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .pat-grid-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .pat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        .pat-month-cell {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .pat-month-cell:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .pat-month-cell.complete {
+            background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%);
+            border-color: var(--success);
+        }
+        .pat-month-cell.partial {
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            border-color: var(--warning);
+        }
+        .pat-month-cell.missing {
+            background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+            border-color: var(--danger);
+        }
+        .pat-month-cell.future {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            opacity: 0.7;
+            cursor: default;
+        }
+        .pat-month-cell .month-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .pat-month-cell .status-icon { font-size: 2rem; }
+        .pat-month-cell .status-text {
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            margin-top: 5px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           NUEVO: FILTRO DE AÑO
+           ═══════════════════════════════════════════════════════════ */
+        .year-filter {
+            display: flex;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .year-filter button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-gray);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .year-filter button:hover { background: white; }
+        .year-filter button.active {
+            background: var(--accent);
+            color: white;
+        }
+
         /* ===== PROGRESS BARS ===== */
         .record-form {
             background: white;
@@ -337,12 +470,42 @@
         /* ===== FOOTER ===== */
         .footer { text-align: center; padding: 30px; color: var(--text-gray); margin-top: 50px; }
 
+        /* ===== LOGOUT BUTTON ===== */
+        .logout-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .header-container { flex-direction: column; gap: 15px; }
             .emergency-maps-grid { grid-template-columns: 1fr; }
             .main-nav { flex-direction: column; }
             .nav-btn { width: 100%; }
+            .logout-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            .pat-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
         }
     </style>
 </head>
@@ -421,10 +584,10 @@
         <nav class="main-nav">
             <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
             <button class="nav-btn" onclick="showSection('marco')">📋 Documentos SG-SST</button>
-            <button class="nav-btn private" onclick="showPrivateSection('ejecucion')" id="btnEjecucion">
+            <button class="nav-btn private" onclick="showPrivateSection('ejecucion')" id="btnEjecucion" style="display:none;">
                 🔒 Ejecución Constante 2026
             </button>
-            <button class="nav-btn private" onclick="showPrivateSection('herramientas')" id="btnHerramientas">
+            <button class="nav-btn private" onclick="showPrivateSection('herramientas')" id="btnHerramientas" style="display:none;">
                 🔧 Herramientas Admin
             </button>
             <button class="nav-btn" onclick="window.location.href='habeas-data-convivienda1.html'">📋 Habeas Data</button>
@@ -497,6 +660,22 @@
                 <p style="margin-top:15px;font-size:0.82rem;color:var(--text-gray);font-style:italic;">
                     📌 El detalle mensual de actividades está disponible en la sección <strong>Ejecución Constante 2026</strong> (acceso administrador).
                 </p>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 NUEVA GRILLA MENSUAL PAT CON FILTRO DE AÑO
+                 ═══════════════════════════════════════════════════════════ -->
+            <div class="pat-grid-container">
+                <div class="pat-grid-header">
+                    <h3 class="pat-grid-title">📅 Grilla Mensual PAT — Estado por Mes</h3>
+                    <div class="year-filter">
+                        <button onclick="cambiarAñoGrilla(2025)" id="yearBtn2025">2025</button>
+                        <button onclick="cambiarAñoGrilla(2026)" id="yearBtn2026" class="active">2026</button>
+                    </div>
+                </div>
+                <div class="pat-grid" id="patGrid">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </div>
             </div>
 
             <!-- Mapa de Evacuación -->
@@ -624,6 +803,17 @@
             <div class="section-header">
                 <h2 class="section-title">🔒 Ejecución Constante 2026</h2>
                 <p class="section-subtitle">Registros operacionales en tiempo real — Solo Administrador</p>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 NUEVO BANNER DE ALERTA MENSUAL
+                 ═══════════════════════════════════════════════════════════ -->
+            <div id="alertBanner" class="alert-banner">
+                <div class="icon">⏳</div>
+                <div class="content">
+                    <div class="title">Cargando estado del mes actual...</div>
+                    <div class="message">Verificando actividades pendientes para el mes en curso</div>
+                </div>
             </div>
 
             <!-- Tabla mensual actividades -->
@@ -895,6 +1085,11 @@
         </div>
     </div>
 
+    <!-- Botón de Logout (solo visible con sesión activa) -->
+    <button id="logoutBtn" class="logout-btn" onclick="logout()" style="display:none;">
+        🚪 Cerrar Sesión
+    </button>
+
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
@@ -931,6 +1126,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const EDIFICIO_ID = 'convivienda-1';
+        let añoActualGrilla = 2026; // Variable para el filtro de año de la grilla PAT
 
         console.log('✅ Firebase inicializado — Dashboard Convivienda 1');
 
@@ -943,8 +1139,13 @@
         window.onload = function() {
             if (isLoggedIn) {
                 document.getElementById('adminBadge').style.display = 'block';
+                document.getElementById('btnEjecucion').style.display = 'inline-block';
+                document.getElementById('btnHerramientas').style.display = 'inline-block';
+                document.getElementById('logoutBtn').style.display = 'block';
             }
             actualizarDashboard2026();
+            actualizarGrillaPAT();
+            actualizarBannerAlerta();
         };
 
         function attemptLogin() {
@@ -958,6 +1159,9 @@
                 document.getElementById('loginUser').value = '';
                 document.getElementById('loginPass').value = '';
                 document.getElementById('adminBadge').style.display = 'block';
+                document.getElementById('btnEjecucion').style.display = 'inline-block';
+                document.getElementById('btnHerramientas').style.display = 'inline-block';
+                document.getElementById('logoutBtn').style.display = 'block';
 
                 // Navegar a la sección solicitada antes del login
                 if (pendingSection) {
@@ -1008,7 +1212,7 @@
                 return;
             }
             showSection(sectionId);
-            if (sectionId === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); }
+            if (sectionId === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); actualizarBannerAlerta(); }
             if (sectionId === 'herramientas') { actualizarPanelAdmin(); actualizarArchivoDocumentos(); }
         }
 
@@ -1240,6 +1444,151 @@
         }
 
         // ═══════════════════════════════════════════════════════════════
+        // NUEVA FUNCIÓN: CAMBIAR AÑO EN GRILLA PAT
+        // ═══════════════════════════════════════════════════════════════
+        function cambiarAñoGrilla(año) {
+            añoActualGrilla = año;
+            document.querySelectorAll('.year-filter button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`yearBtn${año}`).classList.add('active');
+            actualizarGrillaPAT();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // NUEVA FUNCIÓN: GRILLA MENSUAL PAT (tipo semáforo)
+        // ═══════════════════════════════════════════════════════════════
+        function actualizarGrillaPAT() {
+            const grid = document.getElementById('patGrid');
+            if (!grid) return;
+
+            const ahora = new Date();
+            const mesActualReal = ahora.getMonth();
+            const añoActualReal = ahora.getFullYear();
+
+            Promise.all([
+                database.ref(`edificios/${EDIFICIO_ID}/informes`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/cuentas`).once('value')
+            ]).then(([snapInformes, snapCuentas]) => {
+                const informes = snapInformes.val() || {};
+                const cuentas = snapCuentas.val() || {};
+
+                let html = '';
+                for (let m = 0; m < 12; m++) {
+                    const clave = `${añoActualGrilla}-${String(m+1).padStart(2,'0')}`;
+                    const infTiene = informes[clave] && (informes[clave].link || informes[clave].generado);
+                    const cueTiene = cuentas[clave] && (cuentas[clave].link || cuentas[clave].generado);
+
+                    let statusClass = '';
+                    let statusIcon = '';
+                    let statusText = '';
+
+                    // Determinar si es mes futuro
+                    const esFuturo = (añoActualGrilla > añoActualReal) || 
+                                    (añoActualGrilla === añoActualReal && m > mesActualReal);
+
+                    if (esFuturo) {
+                        statusClass = 'future';
+                        statusIcon = '⏳';
+                        statusText = 'Próximo';
+                    } else if (infTiene && cueTiene) {
+                        statusClass = 'complete';
+                        statusIcon = '🟢';
+                        statusText = 'Completo';
+                    } else if (infTiene || cueTiene) {
+                        statusClass = 'partial';
+                        statusIcon = '🟡';
+                        statusText = 'Parcial';
+                    } else {
+                        statusClass = 'missing';
+                        statusIcon = '🔴';
+                        statusText = 'Sin actividad';
+                    }
+
+                    html += `
+                        <div class="pat-month-cell ${statusClass}">
+                            <div class="month-name">${MESES_NOMBRES[m]}</div>
+                            <div class="status-icon">${statusIcon}</div>
+                            <div class="status-text">${statusText}</div>
+                        </div>
+                    `;
+                }
+
+                grid.innerHTML = html;
+            }).catch(err => {
+                console.error('Error actualizando grilla PAT:', err);
+                grid.innerHTML = '<p style="color:#ef4444;text-align:center;">Error cargando datos</p>';
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // NUEVA FUNCIÓN: BANNER DE ALERTA MENSUAL
+        // ═══════════════════════════════════════════════════════════════
+        function actualizarBannerAlerta() {
+            const banner = document.getElementById('alertBanner');
+            if (!banner) return;
+
+            const ahora = new Date();
+            const mesActual = ahora.getMonth();
+            const año = ahora.getFullYear();
+            const clave = `${año}-${String(mesActual + 1).padStart(2, '0')}`;
+
+            Promise.all([
+                database.ref(`edificios/${EDIFICIO_ID}/informes/${clave}`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/cuentas/${clave}`).once('value')
+            ]).then(([snapInforme, snapCuenta]) => {
+                const informe = snapInforme.val();
+                const cuenta = snapCuenta.val();
+
+                const infTiene = informe && (informe.link || informe.generado);
+                const cueTiene = cuenta && (cuenta.link || cuenta.generado);
+
+                let icon = '';
+                let title = '';
+                let message = '';
+                let className = '';
+
+                if (infTiene && cueTiene) {
+                    // Todo completo
+                    icon = '✅';
+                    title = `¡Actividades de ${MESES_NOMBRES[mesActual]} completas!`;
+                    message = 'Informe Mensual SST y Cuenta por Cobrar generados correctamente.';
+                    className = 'alert-banner success';
+                } else {
+                    // Hay pendientes
+                    icon = '⚠️';
+                    title = `Actividades pendientes para ${MESES_NOMBRES[mesActual]}`;
+                    
+                    const pendientes = [];
+                    if (!infTiene) pendientes.push('Informe Mensual SST');
+                    if (!cueTiene) pendientes.push('Cuenta por Cobrar');
+                    
+                    message = `Falta generar: ${pendientes.join(' y ')}. Límite: día 25 del mes.`;
+                    className = 'alert-banner danger';
+                }
+
+                banner.className = className;
+                banner.innerHTML = `
+                    <div class="icon">${icon}</div>
+                    <div class="content">
+                        <div class="title">${title}</div>
+                        <div class="message">${message}</div>
+                    </div>
+                `;
+            }).catch(err => {
+                console.error('Error actualizando banner alerta:', err);
+                banner.className = 'alert-banner';
+                banner.innerHTML = `
+                    <div class="icon">⚠️</div>
+                    <div class="content">
+                        <div class="title">Error al cargar estado</div>
+                        <div class="message">No se pudo verificar el estado de las actividades</div>
+                    </div>
+                `;
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
         // ARCHIVO DE DOCUMENTOS — INFORMES Y CUENTAS
         // ═══════════════════════════════════════════════════════════════
         function buildArchivoCells(tipo, clave, data, esFuturo) {
@@ -1362,6 +1711,8 @@
             }).then(() => {
                 console.log(`✅ Link ${tipo} ${clave} guardado en Convivienda 1`);
                 actualizarArchivoDocumentos();
+                actualizarGrillaPAT();
+                actualizarBannerAlerta();
             }).catch(err => console.error('Error guardando link:', err));
         }
 
@@ -1377,10 +1728,18 @@
             actualizarDashboard2026();
         });
 
-        setInterval(function() { actualizarDashboard2026(); }, 30000);
+        setInterval(function() { 
+            actualizarDashboard2026();
+            actualizarGrillaPAT();
+            actualizarBannerAlerta();
+        }, 30000);
 
         document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) actualizarDashboard2026();
+            if (!document.hidden) {
+                actualizarDashboard2026();
+                actualizarGrillaPAT();
+                actualizarBannerAlerta();
+            }
         });
 
     </script>

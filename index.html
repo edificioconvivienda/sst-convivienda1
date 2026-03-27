@@ -333,6 +333,28 @@
         .status-badge.pending   { background: #fef3c7; color: #92400e; }
         .status-badge.completed { background: #d1fae5; color: #065f46; }
 
+        /* Botón WhatsApp */
+        .whatsapp-button {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+            margin-top: 15px;
+        }
+        .whatsapp-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+
         /* ===== TABLA MENSUAL EJECUCIÓN ===== */
         .exec-table-wrapper { overflow-x: auto; margin-bottom: 25px; }
         .exec-monthly-table {
@@ -828,6 +850,14 @@
                     <div class="title">Cargando estado del mes actual...</div>
                     <div class="message">Verificando actividades pendientes para el mes en curso</div>
                 </div>
+            </div>
+
+            <!-- Botón Resumen WhatsApp -->
+            <div style="text-align: center; margin-bottom: 25px;">
+                <button class="whatsapp-button" onclick="generarResumenWhatsApp()">
+                    <span style="font-size: 1.5rem;">📱</span>
+                    Generar Resumen para WhatsApp
+                </button>
             </div>
 
             <!-- Tabla mensual actividades -->
@@ -1837,6 +1867,44 @@
             } else {
                 badge.style.display = 'none';
             }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // FUNCIÓN: Generar Resumen para WhatsApp
+        // ═══════════════════════════════════════════════════════════════
+        function generarResumenWhatsApp() {
+            const ahora = new Date();
+            const mesActual = ahora.getMonth();
+            const clave = `2026-${String(mesActual + 1).padStart(2, '0')}`;
+            const MESES_NOMBRES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+            Promise.all([
+                database.ref(`edificios/${EDIFICIO_ID}/informes`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/cuentas`).once('value')
+            ]).then(([snapInf, snapCue]) => {
+                const informes = snapInf.val() || {};
+                const cuentas  = snapCue.val() || {};
+
+                const tieneInforme = informes[clave] && (informes[clave].link || informes[clave].generado);
+                const tieneCuenta  = cuentas[clave]  && (cuentas[clave].link  || cuentas[clave].generado);
+
+                let texto = `📋 *SST Edificio Convivienda I*\n`;
+                texto += `📅 Resumen: ${MESES_NOMBRES[mesActual]} 2026\n\n`;
+                texto += `*Estado de Cumplimiento:*\n`;
+                texto += tieneInforme ? `✅ Informe mensual SST realizado\n` : `❌ Informe mensual SST pendiente\n`;
+                texto += tieneCuenta  ? `✅ Cuenta por cobrar generada\n`   : `❌ Cuenta por cobrar pendiente\n`;
+                texto += `\n_Administrado por Carla Castellano M._\n`;
+                texto += `_C.E. 679955_`;
+
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('✅ ¡Resumen copiado!\n\nYa puedes pegarlo en WhatsApp.\n\nEl texto fue copiado al portapapeles.');
+                }).catch(() => {
+                    prompt('📱 Copia este texto para WhatsApp:', texto);
+                });
+            }).catch(err => {
+                console.error('Error generando resumen:', err);
+                alert('Error al generar el resumen. Intenta de nuevo.');
+            });
         }
 
         // ═══════════════════════════════════════════════════════════════

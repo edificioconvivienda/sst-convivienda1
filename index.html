@@ -800,10 +800,21 @@
         <!-- SECTION: EJECUCIÓN CONSTANTE (PRIVADA)      -->
         <!-- ═══════════════════════════════════════════ -->
         <section id="ejecucion" class="section">
-            <div class="section-header">
+            <div class="section-header" style="position:relative;">
                 <h2 class="section-title">🔒 Ejecución Constante 2026</h2>
                 <p class="section-subtitle">Registros operacionales en tiempo real — Solo Administrador</p>
+                <button id="btnCampana" onclick="toggleNotificaciones()" title="Notificaciones pendientes"
+                    style="position:absolute;top:0;right:0;background:none;border:none;cursor:pointer;font-size:1.6rem;padding:4px;">
+                    🔔<span id="badgeCampana" style="display:none;position:absolute;top:-2px;right:-2px;background:#ef4444;color:white;border-radius:50%;font-size:0.6rem;width:16px;height:16px;line-height:16px;text-align:center;font-weight:700;"></span>
+                </button>
+                <!-- Panel notificaciones -->
+                <div id="panelNotificaciones" style="display:none;position:absolute;top:50px;right:0;width:340px;background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.15);border:1px solid #e2e8f0;z-index:1000;max-height:400px;overflow-y:auto;">
+                    <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#1C3461;">📋 Pendientes por mes</div>
+                    <div id="listaPendientesPanel" style="padding:12px 16px;font-size:0.85rem;color:#64748b;">Cargando...</div>
+                </div>
             </div>
+            <!-- Indicador oculto para compatibilidad -->
+            <div id="alertaPendientes" style="display:none;"></div>
 
             <!-- ═══════════════════════════════════════════════════════════
                  NUEVO BANNER DE ALERTA MENSUAL
@@ -1172,7 +1183,7 @@
                     document.getElementById(sid).classList.add('active');
                     const btnMap = { ejecucion: 'btnEjecucion', herramientas: 'btnHerramientas' };
                     if (btnMap[sid]) document.getElementById(btnMap[sid]).classList.add('active');
-                    if (sid === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); }
+                    if (sid === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); cargarNotificaciones(); }
                     if (sid === 'herramientas') { actualizarPanelAdmin(); actualizarArchivoDocumentos(); }
                 }
 
@@ -1212,7 +1223,7 @@
                 return;
             }
             showSection(sectionId);
-            if (sectionId === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); actualizarBannerAlerta(); }
+            if (sectionId === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); actualizarBannerAlerta(); cargarNotificaciones(); }
             if (sectionId === 'herramientas') { actualizarPanelAdmin(); actualizarArchivoDocumentos(); }
         }
 
@@ -1591,18 +1602,29 @@
         // ═══════════════════════════════════════════════════════════════
         // ARCHIVO DE DOCUMENTOS — INFORMES Y CUENTAS
         // ═══════════════════════════════════════════════════════════════
-        function buildArchivoCells(tipo, clave, data, esFuturo) {
+        function buildArchivoCells(tipo, clave, data, esFuturo, informesGenerados, rutasLocales) {
             const d = data[clave] || {};
             const link = d.link || '';
             const iconBtn = tipo === 'informe' ? '📄 Ver Informe' : '💰 Ver Cuenta';
             const iconAdd = tipo === 'informe' ? '🔗 Agregar informe' : '🔗 Agregar cuenta';
             if (esFuturo) return `<span style="color:#cbd5e1;font-size:0.8rem;">—</span>`;
+            // Detectar si el Generador guardó datos para este mes
+            const genKey = tipo === 'informe' ? 'informe' : 'cuenta';
+            const hayGenerado = informesGenerados && Object.keys(informesGenerados).some(k =>
+                k.startsWith(`${genKey}-`) && k.includes(clave.replace('-',''))
+            );
             let html = '<div class="arch-cell">';
             if (link) {
                 html += `<button class="btn-arch-open" onclick="window.open('${link.replace(/'/g,"\\'")}','_blank')">${iconBtn}</button>`;
-                html += `<button class="btn-arch-edit" onclick="editarLink('${tipo}','${clave}')" title="Cambiar enlace">✏️</button>`;
+                if (hayGenerado) {
+                    html += `<button class="btn-arch-edit" onclick="openGenerador('${tipo}')" style="background:#7c3aed;color:white;" title="Regenerar">🔄 Regenerar</button>`;
+                }
+                html += `<button class="btn-arch-edit" onclick="abrirModalSubida('${tipo}','${clave}')" title="Cambiar enlace">✏️</button>`;
             } else {
-                html += `<button class="btn-arch-add" onclick="agregarLink('${tipo}','${clave}')">${iconAdd}</button>`;
+                if (hayGenerado) {
+                    html += `<button class="btn-arch-edit" onclick="openGenerador('${tipo}')" style="background:#7c3aed;color:white;" title="Regenerar">🔄 Regenerar</button>`;
+                }
+                html += `<button class="btn-arch-add" onclick="abrirModalSubida('${tipo}','${clave}')">${iconAdd}</button>`;
             }
             html += '</div>';
             return html;
@@ -1614,10 +1636,22 @@
 
             Promise.all([
                 database.ref(`edificios/${EDIFICIO_ID}/informes`).once('value'),
-                database.ref(`edificios/${EDIFICIO_ID}/cuentas`).once('value')
-            ]).then(([snapInf, snapCue]) => {
-                const informes = snapInf.val() || {};
-                const cuentas  = snapCue.val() || {};
+                database.ref(`edificios/${EDIFICIO_ID}/cuentas`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/rutasLocales`).once('value')
+            ]).then(([snapInf, snapCue, snapRutas]) => {
+                const informesLinks2   = snapInf.val()   || {};
+                const cuentas          = snapCue.val()   || {};
+                const rutasLocales     = snapRutas.val() || {};
+
+                // Separar registros de links (2026-01) vs generados (informe-enero-2026-xxx)
+                const informes = {};
+                Object.entries(informesLinks2).forEach(([k, v]) => {
+                    if (/^\d{4}-\d{2}$/.test(k)) informes[k] = v;
+                });
+                const informesGenerados = {};
+                Object.entries(informesLinks2).forEach(([k, v]) => {
+                    if (!/^\d{4}-\d{2}$/.test(k)) informesGenerados[k] = v;
+                });
 
                 const tbodyEjec  = document.getElementById('archivoDocBodyEjec');
                 const tbodyAdmin = document.getElementById('archivoDocBodyAdmin');
@@ -1631,8 +1665,8 @@
                     const esMesActual= m === mesActual;
                     const esPasado   = m < mesActual;
 
-                    const infCell = buildArchivoCells('informe', clave, informes, esFuturo);
-                    const cueCell = buildArchivoCells('cuenta',  clave, cuentas,  esFuturo);
+                    const infCell = buildArchivoCells('informe', clave, informes, esFuturo, informesGenerados, rutasLocales);
+                    const cueCell = buildArchivoCells('cuenta',  clave, cuentas,  esFuturo, informesGenerados, rutasLocales);
 
                     const infTiene = informes[clave] && (informes[clave].link || informes[clave].generado);
                     const cueTiene = cuentas[clave]  && (cuentas[clave].link  || cuentas[clave].generado);
@@ -1675,28 +1709,37 @@
             }).catch(err => console.error('Error archivo docs Convivienda 1:', err));
         }
 
-        function agregarLink(tipo, clave) {
+        // Estado modal
+        let _modalTipo = '', _modalClave = '';
+
+        function abrirModalSubida(tipo, clave) {
+            _modalTipo  = tipo;
+            _modalClave = clave;
             const etiqueta  = tipo === 'informe' ? 'Informe Mensual SST' : 'Cuenta por Cobrar';
             const mesNombre = MESES_NOMBRES[parseInt(clave.split('-')[1]) - 1];
-            const url = prompt(
-                `📂 Enlace Google Drive — ${etiqueta}\nMes: ${mesNombre} 2026\n\n` +
-                `Pega el enlace de Google Drive del documento:\n(Ej: https://drive.google.com/file/d/.../view)`
-            );
-            if (!url || !url.trim()) return;
-            guardarLinkFirebase(tipo, clave, url.trim());
+            document.getElementById('modalSubidaTitulo').textContent    = `📂 Vincular ${etiqueta}`;
+            document.getElementById('modalSubidaDescripcion').textContent = `Mes: ${mesNombre} 2026`;
+            document.getElementById('modalSubidaInput').value            = '';
+            document.getElementById('modalSubidaInput').style.borderColor = '#e2e8f0';
+            const modal = document.getElementById('modalSubidaLink');
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('modalSubidaInput').focus(), 100);
         }
 
-        function editarLink(tipo, clave) {
-            const etiqueta  = tipo === 'informe' ? 'Informe' : 'Cuenta';
-            const mesNombre = MESES_NOMBRES[parseInt(clave.split('-')[1]) - 1];
-            const nuevoUrl  = prompt(`✏️ Editar enlace — ${etiqueta} de ${mesNombre}\n\nPega el nuevo enlace de Google Drive:`);
-            if (nuevoUrl === null) return;
-            if (!nuevoUrl.trim()) {
-                if (confirm('¿Deseas eliminar el enlace guardado?')) guardarLinkFirebase(tipo, clave, '');
-                return;
-            }
-            guardarLinkFirebase(tipo, clave, nuevoUrl.trim());
+        function cerrarModalSubida() {
+            document.getElementById('modalSubidaLink').style.display = 'none';
         }
+
+        function confirmarEnlaceModal() {
+            const url = document.getElementById('modalSubidaInput').value.trim();
+            if (!url) { alert('Por favor pega un enlace de Google Drive.'); return; }
+            guardarLinkFirebase(_modalTipo, _modalClave, url);
+            cerrarModalSubida();
+        }
+
+        // Alias para botones existentes
+        function agregarLink(tipo, clave) { abrirModalSubida(tipo, clave); }
+        function editarLink(tipo, clave)  { abrirModalSubida(tipo, clave); }
 
         function guardarLinkFirebase(tipo, clave, url) {
             const ruta = tipo === 'informe' ? 'informes' : 'cuentas';
@@ -1718,6 +1761,91 @@
 
         function actualizarPanelAdmin() {
             actualizarArchivoDocumentos();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CAMPANA DE NOTIFICACIONES
+        // ═══════════════════════════════════════════════════════════════
+        function toggleNotificaciones() {
+            const panel = document.getElementById('panelNotificaciones');
+            if (!panel) return;
+            const visible = panel.style.display !== 'none';
+            panel.style.display = visible ? 'none' : 'block';
+            if (!visible) cargarNotificaciones();
+        }
+
+        // Cerrar panel al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('panelNotificaciones');
+            const btn   = document.getElementById('btnCampana');
+            if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+                panel.style.display = 'none';
+            }
+        });
+
+        function cargarNotificaciones() {
+            const lista = document.getElementById('listaPendientesPanel');
+            if (!lista) return;
+            const año = 2026;
+            const mesActual = new Date().getMonth(); // 0-based
+
+            Promise.all([
+                database.ref(`edificios/${EDIFICIO_ID}/supervisiones`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/inducciones`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/informes`).once('value'),
+                database.ref(`edificios/${EDIFICIO_ID}/cuentas`).once('value')
+            ]).then(([snapSup, snapInd, snapInf, snapCue]) => {
+                const supervisiones = snapSup.val() || {};
+                const inducciones   = snapInd.val() || {};
+                const informes      = snapInf.val() || {};
+                const cuentas       = snapCue.val() || {};
+
+                // Meses con registro (set de periodos "YYYY-MM")
+                const mesesSup = new Set(Object.values(supervisiones).map(r => r.fecha ? r.fecha.slice(0,7) : '').filter(Boolean));
+                const mesesInd = new Set(Object.values(inducciones).map(r => r.fecha   ? r.fecha.slice(0,7)   : '').filter(Boolean));
+
+                let html = '';
+                let totalPendientes = 0;
+
+                for (let m = 0; m <= mesActual; m++) {
+                    const clave = `${año}-${String(m+1).padStart(2,'0')}`;
+                    const pendientes = [];
+                    if (!mesesSup.has(clave)) pendientes.push('📋 Supervisión');
+                    if (!mesesInd.has(clave)) pendientes.push('🎓 Inducción');
+                    const infObj = informes[clave] || {};
+                    if (!infObj.link && !infObj.generado) pendientes.push('📊 Informe SST');
+                    const cueObj = cuentas[clave] || {};
+                    if (!cueObj.link && !cueObj.generado) pendientes.push('💰 Cuenta x cobrar');
+
+                    if (pendientes.length > 0) {
+                        totalPendientes += pendientes.length;
+                        html += `<div style="margin-bottom:10px;padding:8px;background:#fff7ed;border-radius:8px;border-left:3px solid #f59e0b;">
+                            <strong style="color:#92400e;">${MESES_NOMBRES[m]}</strong><br>
+                            <span style="color:#b45309;">${pendientes.join(' · ')}</span>
+                        </div>`;
+                    }
+                }
+
+                if (!html) {
+                    html = `<div style="text-align:center;padding:20px;color:#10b981;font-weight:600;">✅ ¡Todo al día!</div>`;
+                }
+
+                lista.innerHTML = html;
+                actualizarBadgeCampana(totalPendientes);
+            }).catch(() => {
+                lista.innerHTML = '<p style="color:#ef4444;">Error al cargar pendientes.</p>';
+            });
+        }
+
+        function actualizarBadgeCampana(total) {
+            const badge = document.getElementById('badgeCampana');
+            if (!badge) return;
+            if (total > 0) {
+                badge.textContent = total > 9 ? '9+' : total;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
         }
 
         // ═══════════════════════════════════════════════════════════════
@@ -1743,5 +1871,27 @@
         });
 
     </script>
+
+    <!-- Modal subida Google Drive -->
+    <div id="modalSubidaLink" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:16px;padding:30px;max-width:500px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h3 id="modalSubidaTitulo" style="margin-bottom:8px;color:#1C3461;">📂 Vincular documento</h3>
+            <p id="modalSubidaDescripcion" style="font-size:0.88rem;color:#64748b;margin-bottom:16px;"></p>
+            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.83rem;color:#0369a1;">
+                <strong>📌 Instrucciones:</strong><br>
+                1. Abre el documento en Google Drive<br>
+                2. Haz clic en <strong>Compartir → Copiar enlace</strong><br>
+                3. Asegúrate de que el acceso sea <em>"Cualquiera con el enlace"</em><br>
+                4. Pega el enlace aquí abajo
+            </div>
+            <input type="url" id="modalSubidaInput" placeholder="https://drive.google.com/file/d/.../view"
+                style="width:100%;padding:10px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.9rem;margin-bottom:16px;box-sizing:border-box;"
+                oninput="this.style.borderColor=this.value.includes('drive.google.com')?'#10b981':'#e2e8f0'">
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button onclick="cerrarModalSubida()" style="padding:9px 18px;border:2px solid #e2e8f0;background:white;border-radius:8px;cursor:pointer;font-size:0.9rem;">Cancelar</button>
+                <button onclick="confirmarEnlaceModal()" style="padding:9px 18px;background:#1C3461;color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;">💾 Guardar enlace</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

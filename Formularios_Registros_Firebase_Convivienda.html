@@ -548,9 +548,14 @@
                         <div class="uploaded-files" id="filesInduccion"></div>
                     </div>
 
+                    <div id="bannerEdicionInduccion" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:12px 16px;margin-bottom:12px;display:none;align-items:center;gap:12px;">
+                        <span style="font-size:1.1rem;">✏️</span>
+                        <span style="flex:1;color:#92400e;font-weight:600;">Editando registro de inducción. Los cambios sobreescribirán el registro original.</span>
+                        <button type="button" onclick="cancelarEdicionInduccion()" style="background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem;">✖ Cancelar edición</button>
+                    </div>
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary">Guardar Borrador</button>
-                        <button type="submit" class="btn btn-primary">💾 Guardar Registro</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitInduccion">💾 Guardar Registro</button>
                     </div>
                 </form>
             </div>
@@ -585,10 +590,10 @@
             <div class="progress-info">
                 <div class="progress-stat">
                     <strong>Progreso Inspecciones 2026</strong>
-                    <span>0/12 inspecciones mensuales | 0/4 trimestrales</span>
+                    <span id="inspecciones-progress">0/12 meses completados</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: 0%"></div>
+                    <div class="progress-fill" id="inspecciones-bar" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -1278,9 +1283,88 @@
         // ============================================
         // FORMULARIO 1: REGISTRO INDUCCIÓN
         // ============================================
+        // LÓGICA DE EDICIÓN DE INDUCCIONES
+        // ============================================
+        let editandoInduccionId = null;
+        window._inducciones_cargadas = {};
+
+        function editarInduccion(id, data) {
+            editandoInduccionId = id;
+            const form = document.getElementById('formInduccion');
+            // Llenar campos
+            form.querySelector('[name="mes"]').value       = data.mes       || '';
+            form.querySelector('[name="fecha"]').value     = data.fecha     || '';
+            form.querySelector('[name="tipo"]').value      = data.tipo      || '';
+            form.querySelector('[name="tema"]').value      = data.tema      || '';
+            form.querySelector('[name="duracion"]').value  = data.duracion  || '';
+            form.querySelector('[name="responsable"]').value   = data.responsable   || '';
+            form.querySelector('[name="temas_tratados"]').value = data.temas_tratados || '';
+            form.querySelector('[name="personal_serdan"]').value = data.personal_serdan || 0;
+            form.querySelector('[name="personal_sosa"]').value   = data.personal_sosa   || 0;
+            form.querySelector('[name="total_asistentes"]').value = data.total_asistentes || 0;
+            form.querySelector('[name="observaciones"]').value   = data.observaciones   || '';
+            // Checkboxes
+            const ev = data.evaluacion || [];
+            document.getElementById('eval1').checked = ev.includes('Evaluación realizada');
+            document.getElementById('eval2').checked = ev.includes('Comprensión demostrada');
+            document.getElementById('eval3').checked = ev.includes('Material entregado');
+            document.getElementById('eval4').checked = ev.includes('Certificados emitidos');
+            // Mostrar banner y cambiar botón
+            const banner = document.getElementById('bannerEdicionInduccion');
+            if (banner) banner.style.display = 'flex';
+            const btn = document.getElementById('btnSubmitInduccion');
+            if (btn) btn.textContent = '💾 Guardar Cambios';
+            // Scroll al formulario
+            form.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicionInduccion() {
+            editandoInduccionId = null;
+            document.getElementById('formInduccion').reset();
+            const banner = document.getElementById('bannerEdicionInduccion');
+            if (banner) banner.style.display = 'none';
+            const btn = document.getElementById('btnSubmitInduccion');
+            if (btn) btn.textContent = '💾 Guardar Registro';
+        }
+
+        function cargarTablaInducciones() {
+            const ref = database.ref(`edificios/${EDIFICIO_ID}/inducciones`);
+            ref.on('value', (snapshot) => {
+                const registros = snapshot.val() || {};
+                window._inducciones_cargadas = registros;
+                const tbody = document.getElementById('induccionRecords');
+                if (!tbody) return;
+                const ids = Object.keys(registros);
+                if (ids.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:#64748b;">No hay registros aún.</td></tr>`;
+                    return;
+                }
+                // Ordenar por fecha desc
+                ids.sort((a, b) => (registros[b].fecha || '').localeCompare(registros[a].fecha || ''));
+                tbody.innerHTML = ids.map(id => {
+                    const r = registros[id];
+                    return `<tr>
+                        <td>${r.mes || '—'}</td>
+                        <td>${r.fecha || '—'}</td>
+                        <td>${r.tema || '—'}</td>
+                        <td>${r.total_asistentes || 0}</td>
+                        <td><span style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:8px;font-size:0.8rem;">✅ Registrado</span></td>
+                        <td style="white-space:nowrap;">
+                            <button onclick="editarInduccion('${id}', window._inducciones_cargadas['${id}'])" style="background:#f59e0b;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;margin-right:4px;" title="Editar">✏️</button>
+                            <button onclick="window.open('data:text/plain,'+encodeURIComponent(JSON.stringify(window._inducciones_cargadas['${id}'],null,2)))" style="background:#3b82f6;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;margin-right:4px;" title="Ver detalle">👁️</button>
+                            <button onclick="if(confirm('¿Eliminar este registro?')){database.ref('edificios/'+EDIFICIO_ID+'/inducciones/${id}').remove()}" style="background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;" title="Eliminar">🗑️</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            });
+        }
+
+        // ============================================
+        // FORMULARIO 1: INDUCCIÓN/REINDUCCIÓN
+        // ============================================
         document.getElementById('formInduccion').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Mostrar loading
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn ? submitBtn.textContent : '';
@@ -1288,16 +1372,16 @@
                 submitBtn.disabled = true;
                 submitBtn.textContent = '⏳ Guardando...';
             }
-            
+
             const formData = new FormData(e.target);
-            
+
             // Capturar checkboxes de evaluación
             const evaluacion = [];
             if (document.getElementById('eval1')?.checked) evaluacion.push('Evaluación realizada');
             if (document.getElementById('eval2')?.checked) evaluacion.push('Comprensión demostrada');
             if (document.getElementById('eval3')?.checked) evaluacion.push('Material entregado');
             if (document.getElementById('eval4')?.checked) evaluacion.push('Certificados emitidos');
-            
+
             const datos = {
                 mes: formData.get('mes') || '',
                 fecha: formData.get('fecha') || '',
@@ -1315,35 +1399,34 @@
                 edificio: 'Convivienda 1',
                 responsable_sistema: 'Carla Castellano M. - C.E. 679955'
             };
-            
-            const registroId = 'induccion-' + Date.now();
-            
+
+            // Si estamos editando, sobreescribir el registro existente
+            const registroId = editandoInduccionId || ('induccion-' + Date.now());
+            const esEdicion = !!editandoInduccionId;
+
             database.ref(`edificios/${EDIFICIO_ID}/inducciones/${registroId}`).set(datos)
                 .then(() => {
-                    console.log('✅ Inducción guardada:', registroId);
-                    console.log('📊 Datos:', datos);
-                    
-                    // Mostrar confirmación
-                    alert(`✅ Registro de Inducción guardado exitosamente!\n\n` +
-                          `ID: ${registroId}\n` +
-                          `Fecha: ${datos.fecha}\n` +
-                          `Tema: ${datos.tema}\n` +
-                          `Asistentes: ${datos.total_asistentes}\n\n` +
-                          `Puedes verificarlo en Firebase Console.`);
-                    
-                    // Reset form
+                    console.log(esEdicion ? '✅ Inducción actualizada:' : '✅ Inducción guardada:', registroId);
+
+                    alert(esEdicion
+                        ? `✅ Registro de Inducción actualizado exitosamente!\n\nFecha: ${datos.fecha}\nTema: ${datos.tema}`
+                        : `✅ Registro de Inducción guardado exitosamente!\n\nID: ${registroId}\nFecha: ${datos.fecha}\nTema: ${datos.tema}\nAsistentes: ${datos.total_asistentes}`
+                    );
+
+                    // Reset form y estado edición
                     e.target.reset();
-                    
+                    cancelarEdicionInduccion();
+
                     // Restaurar botón
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
+                        submitBtn.textContent = '💾 Guardar Registro';
                     }
                 })
                 .catch((error) => {
                     console.error('❌ Error:', error);
                     alert(`❌ Error guardando en Firebase:\n${error.message}\n\nIntenta de nuevo.`);
-                    
+
                     // Restaurar botón
                     if (submitBtn) {
                         submitBtn.disabled = false;
@@ -1677,6 +1760,9 @@
         console.log('✅ Firebase inicializado - Formularios Registros Convivienda 1');
         console.log('📊 Edificio:', EDIFICIO_ID);
 
+        // Cargar tabla de inducciones con botones de edición
+        cargarTablaInducciones();
+
         // ============================================
         // CALCULAR PROGRESO MENSUAL
         // ============================================
@@ -1723,7 +1809,7 @@
         
         // Cargar progreso para cada tipo de registro
         calcularProgresoMensual('inducciones', 'induccion-progress', 'induccion-bar');
-        calcularProgresoMensual('inspecciones', 'inspeccion-progress', 'inspeccion-bar');
+        calcularProgresoMensual('inspecciones', 'inspecciones-progress', 'inspecciones-bar');
         calcularProgresoMensual('mantenimientos', 'mantenimiento-progress', 'mantenimiento-bar');
         calcularProgresoMensual('contratistas', 'contratista-progress', 'contratista-bar');
         calcularProgresoMensual('accidentes', 'accidente-progress', 'accidente-bar');

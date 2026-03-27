@@ -347,6 +347,45 @@
                 width: 100%;
             }
         }
+
+        /* Modal lista supervisiones */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal-overlay.active { display: block; }
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 800px;
+            margin: 40px auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .modal-box h3 { margin-bottom: 16px; color: #333; }
+        .modal-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .modal-table th { background: #667eea; color: white; padding: 10px 12px; text-align: left; }
+        .modal-table td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .modal-table tr:hover td { background: #f8f9ff; }
+        .btn-edit-sup { background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-edit-sup:hover { background: #d97706; }
+
+        /* Banner edición */
+        #bannerEdicionSupervision {
+            display: none;
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: #92400e;
+        }
     </style>
 </head>
 <body>
@@ -356,6 +395,16 @@
             <p>Edificio Convivienda 1 | Sistema de registro con fotografías</p>
         </div>
 
+        <!-- Modal lista de supervisiones -->
+        <div class="modal-overlay" id="modalSupervisiones">
+            <div class="modal-box">
+                <h3>📋 Supervisiones Guardadas</h3>
+                <div id="modalSupervisionesContenido"></div>
+                <br>
+                <button class="btn btn-back" onclick="document.getElementById('modalSupervisiones').classList.remove('active')">✖ Cerrar</button>
+            </div>
+        </div>
+
         <div class="nav-buttons">
             <button class="btn btn-back" onclick="volverInicio()">← Volver al Inicio</button>
             <button class="btn btn-primary" onclick="guardarBorrador()">💾 Guardar Borrador</button>
@@ -363,6 +412,10 @@
         </div>
 
         <div class="content">
+            <!-- Banner edición -->
+            <div id="bannerEdicionSupervision">
+                ✏️ Editando supervisión existente. <button onclick="cancelarEdicionSupervision()" style="margin-left:12px;background:#ef4444;color:white;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;">Cancelar edición</button>
+            </div>
             <!-- Datos Generales -->
             <div class="form-section">
                 <h2>📌 Datos Generales</h2>
@@ -500,6 +553,7 @@
         let fotosArray = [];
         let hallazgosPositivos = [];
         let hallazgosNegativos = [];
+        let editandoSupervisionId = null;
         let contadorHallazgosNegativos = 0;
 
         // Cargar datos guardados
@@ -704,20 +758,22 @@
 
         function guardarSupervision() {
             const datos = recopilarDatos();
-            
-            // Guardar en Firebase
-            const supervisionId = 'supervision-' + Date.now();
+
+            // Guardar en Firebase (actualizar si estamos editando)
+            const supervisionId = editandoSupervisionId || ('supervision-' + Date.now());
             const supervisionRef = database.ref(`edificios/${EDIFICIO_ID}/supervisiones/${supervisionId}`);
             
             supervisionRef.set(datos)
                 .then(() => {
                     console.log('✅ Supervisión guardada en Firebase:', supervisionId);
-                    
-                    // También guardar como borrador (para backup local)
                     localStorage.setItem('supervision_borrador', JSON.stringify(datos));
-                    
+
+                    // Limpiar modo edición
+                    editandoSupervisionId = null;
+                    document.getElementById('bannerEdicionSupervision').style.display = 'none';
+
                     alert('✅ Supervisión guardada exitosamente en la nube!\n\nPuedes verla desde cualquier dispositivo en el Informe Consolidado.');
-                    
+
                     if (confirm('¿Deseas ir al Generador de Informe Consolidado ahora?')) {
                         window.location.href = 'Generador_Informe_Consolidado_Mejorado.html';
                     }
@@ -788,22 +844,72 @@
         }
 
         function mostrarListaSupervisiones(supervisiones) {
-            // Ordenar por fecha (más reciente primero)
             supervisiones.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            let mensaje = '📋 SUPERVISIONES GUARDADAS:\n\n';
-            
+            window._supervisiones_cargadas = supervisiones;
+
+            let html = `<table class="modal-table">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Hora Inicio</th>
+                    <th>Responsable</th>
+                    <th>Áreas</th>
+                    <th>Acciones</th>
+                </tr></thead><tbody>`;
+
             supervisiones.forEach((sup, index) => {
-                const fecha = new Date(sup.timestamp);
-                const fechaStr = fecha.toLocaleDateString('es-CO');
-                const horaStr = fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
-                
-                mensaje += `${index + 1}. ${sup.fecha || fechaStr} - ${sup.horaInicio || horaStr}\n`;
-                mensaje += `   Responsable: ${sup.responsable || 'N/A'}\n`;
-                mensaje += `   Áreas: ${sup.areas?.length || 0}\n\n`;
+                const fechaStr = sup.fecha || new Date(sup.timestamp).toLocaleDateString('es-CO');
+                const horaStr = sup.horaInicio || '-';
+                const responsable = sup.responsable || 'N/A';
+                const numAreas = sup.areas?.length || 0;
+                html += `<tr>
+                    <td>${index + 1}</td>
+                    <td>${fechaStr}</td>
+                    <td>${horaStr}</td>
+                    <td>${responsable}</td>
+                    <td>${numAreas} área(s)</td>
+                    <td>
+                        <button class="btn-edit-sup" onclick="editarSupervision('${sup.id}', window._supervisiones_cargadas[${index}])">✏️ Editar</button>
+                    </td>
+                </tr>`;
             });
-            
-            alert(mensaje);
+
+            html += '</tbody></table>';
+            document.getElementById('modalSupervisionesContenido').innerHTML = html;
+            document.getElementById('modalSupervisiones').classList.add('active');
+        }
+
+        function editarSupervision(id, data) {
+            editandoSupervisionId = id;
+            document.getElementById('modalSupervisiones').classList.remove('active');
+
+            // Llenar campos básicos
+            if (data.fecha) document.getElementById('fecha').value = data.fecha;
+            if (data.horaInicio) document.getElementById('horaInicio').value = data.horaInicio;
+            if (data.horaFin) document.getElementById('horaFin').value = data.horaFin;
+
+            // Marcar áreas
+            document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => {
+                cb.checked = data.areas && data.areas.includes(cb.value);
+            });
+
+            // Restaurar hallazgos positivos y negativos
+            if (data.hallazgosPositivos) hallazgosPositivos = data.hallazgosPositivos;
+            if (data.hallazgosNegativos) {
+                hallazgosNegativos = data.hallazgosNegativos;
+                contadorHallazgosNegativos = hallazgosNegativos.length;
+            }
+            if (typeof renderizarHallazgosPositivos === 'function') renderizarHallazgosPositivos();
+
+            // Mostrar banner
+            document.getElementById('bannerEdicionSupervision').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            actualizarResumen();
+        }
+
+        function cancelarEdicionSupervision() {
+            editandoSupervisionId = null;
+            document.getElementById('bannerEdicionSupervision').style.display = 'none';
         }
 
         function recopilarDatos() {

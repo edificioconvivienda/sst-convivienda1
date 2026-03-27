@@ -584,6 +584,9 @@
         <nav class="main-nav">
             <button class="nav-btn active" onclick="showSection('dashboard')">📊 Dashboard</button>
             <button class="nav-btn" onclick="showSection('marco')">📋 Documentos SG-SST</button>
+            <button class="nav-btn private" id="btnLogin" onclick="document.getElementById('loginModal').classList.add('active')">
+                🔐 Iniciar Sesión
+            </button>
             <button class="nav-btn private" onclick="showPrivateSection('ejecucion')" id="btnEjecucion" style="display:none;">
                 🔒 Ejecución Constante 2026
             </button>
@@ -1150,6 +1153,7 @@
         window.onload = function() {
             if (isLoggedIn) {
                 document.getElementById('adminBadge').style.display = 'block';
+                document.getElementById('btnLogin').style.display = 'none';
                 document.getElementById('btnEjecucion').style.display = 'inline-block';
                 document.getElementById('btnHerramientas').style.display = 'inline-block';
                 document.getElementById('logoutBtn').style.display = 'block';
@@ -1170,6 +1174,7 @@
                 document.getElementById('loginUser').value = '';
                 document.getElementById('loginPass').value = '';
                 document.getElementById('adminBadge').style.display = 'block';
+                document.getElementById('btnLogin').style.display = 'none';
                 document.getElementById('btnEjecucion').style.display = 'inline-block';
                 document.getElementById('btnHerramientas').style.display = 'inline-block';
                 document.getElementById('logoutBtn').style.display = 'block';
@@ -1340,7 +1345,8 @@
 
                 console.log('✅ Dashboard Convivienda 1 actualizado:', { totalPAT, mantenimientosAño });
             }).catch(err => {
-                console.error('❌ Error Firebase Convivienda 1:', err);
+                console.error('❌ Error Firebase Convivienda 1:', err.code || err.message || err);
+                // Si Firebase falla, dejar en 0 pero mostrar aviso en consola con código de error
             });
         }
 
@@ -1469,66 +1475,51 @@
         // ═══════════════════════════════════════════════════════════════
         // NUEVA FUNCIÓN: GRILLA MENSUAL PAT (tipo semáforo)
         // ═══════════════════════════════════════════════════════════════
-        function actualizarGrillaPAT() {
+        function renderGrillaPAT(informes, cuentas) {
             const grid = document.getElementById('patGrid');
             if (!grid) return;
-
             const ahora = new Date();
             const mesActualReal = ahora.getMonth();
             const añoActualReal = ahora.getFullYear();
+            let html = '';
+            for (let m = 0; m < 12; m++) {
+                const clave = `${añoActualGrilla}-${String(m+1).padStart(2,'0')}`;
+                const infTiene = informes[clave] && (informes[clave].link || informes[clave].generado);
+                const cueTiene = cuentas[clave]  && (cuentas[clave].link  || cuentas[clave].generado);
+                const esFuturo = (añoActualGrilla > añoActualReal) ||
+                                 (añoActualGrilla === añoActualReal && m > mesActualReal);
+                let statusClass, statusIcon, statusText;
+                if (esFuturo) {
+                    statusClass = 'future';  statusIcon = '⏳'; statusText = 'Próximo';
+                } else if (infTiene && cueTiene) {
+                    statusClass = 'complete'; statusIcon = '🟢'; statusText = 'Completo';
+                } else if (infTiene || cueTiene) {
+                    statusClass = 'partial';  statusIcon = '🟡'; statusText = 'Parcial';
+                } else {
+                    statusClass = 'missing';  statusIcon = '🔴'; statusText = 'Sin actividad';
+                }
+                html += `<div class="pat-month-cell ${statusClass}">
+                    <div class="month-name">${MESES_NOMBRES[m]}</div>
+                    <div class="status-icon">${statusIcon}</div>
+                    <div class="status-text">${statusText}</div>
+                </div>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        function actualizarGrillaPAT() {
+            const grid = document.getElementById('patGrid');
+            if (!grid) return;
 
             Promise.all([
                 database.ref(`edificios/${EDIFICIO_ID}/informes`).once('value'),
                 database.ref(`edificios/${EDIFICIO_ID}/cuentas`).once('value')
             ]).then(([snapInformes, snapCuentas]) => {
-                const informes = snapInformes.val() || {};
-                const cuentas = snapCuentas.val() || {};
-
-                let html = '';
-                for (let m = 0; m < 12; m++) {
-                    const clave = `${añoActualGrilla}-${String(m+1).padStart(2,'0')}`;
-                    const infTiene = informes[clave] && (informes[clave].link || informes[clave].generado);
-                    const cueTiene = cuentas[clave] && (cuentas[clave].link || cuentas[clave].generado);
-
-                    let statusClass = '';
-                    let statusIcon = '';
-                    let statusText = '';
-
-                    // Determinar si es mes futuro
-                    const esFuturo = (añoActualGrilla > añoActualReal) || 
-                                    (añoActualGrilla === añoActualReal && m > mesActualReal);
-
-                    if (esFuturo) {
-                        statusClass = 'future';
-                        statusIcon = '⏳';
-                        statusText = 'Próximo';
-                    } else if (infTiene && cueTiene) {
-                        statusClass = 'complete';
-                        statusIcon = '🟢';
-                        statusText = 'Completo';
-                    } else if (infTiene || cueTiene) {
-                        statusClass = 'partial';
-                        statusIcon = '🟡';
-                        statusText = 'Parcial';
-                    } else {
-                        statusClass = 'missing';
-                        statusIcon = '🔴';
-                        statusText = 'Sin actividad';
-                    }
-
-                    html += `
-                        <div class="pat-month-cell ${statusClass}">
-                            <div class="month-name">${MESES_NOMBRES[m]}</div>
-                            <div class="status-icon">${statusIcon}</div>
-                            <div class="status-text">${statusText}</div>
-                        </div>
-                    `;
-                }
-
-                grid.innerHTML = html;
+                renderGrillaPAT(snapInformes.val() || {}, snapCuentas.val() || {});
             }).catch(err => {
-                console.error('Error actualizando grilla PAT:', err);
-                grid.innerHTML = '<p style="color:#ef4444;text-align:center;">Error cargando datos</p>';
+                console.error('Firebase grilla PAT error:', err.code || err.message || err);
+                // Mostrar grilla vacía en lugar de mensaje de error
+                renderGrillaPAT({}, {});
             });
         }
 

@@ -587,6 +587,134 @@
             }
             .pat-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
         }
+
+        /* ═══════════════════════════════════════════════════
+           COMUNICACIONES SST + COTIZACIONES — Convivienda 1
+           ═══════════════════════════════════════════════════ */
+        .toast-container { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+        .toast { background:white; border-radius:12px; padding:13px 18px; box-shadow:0 4px 20px rgba(0,0,0,0.15); display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:600; min-width:240px; max-width:340px; animation:toastIn 0.3s ease; border-left:4px solid var(--success); pointer-events:all; }
+        .toast.warning { border-left-color:var(--warning); }
+        .toast.error   { border-left-color:var(--danger); }
+        .toast.info    { border-left-color:var(--accent); }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(50px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(50px); } }
+
+        /* Banner Contratistas */
+        .banner-contratistas { display:none; border-radius:15px; padding:16px 20px; margin-bottom:18px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+        .banner-contratistas.info    { display:flex; align-items:center; gap:12px; border-left:5px solid var(--success); background:linear-gradient(to right,#ecfdf5,white); }
+        .banner-contratistas.warning { display:flex; align-items:center; gap:12px; border-left:5px solid var(--warning); background:linear-gradient(to right,#fffbeb,white); }
+        .banner-contratistas.urgente { display:flex; align-items:center; gap:12px; border-left:5px solid var(--danger);  background:linear-gradient(to right,#fef2f2,white); }
+        .banner-contratistas .bc-icon  { font-size:1.7rem; flex-shrink:0; }
+        .banner-contratistas .bc-body  { flex:1; }
+        .banner-contratistas .bc-title { font-weight:700; font-size:0.97rem; color:var(--text-dark); margin-bottom:2px; }
+        .banner-contratistas .bc-msg   { font-size:0.85rem; color:var(--text-gray); }
+        .banner-contratistas .bc-btn   { padding:7px 13px; border-radius:8px; border:none; background:var(--accent); color:white; cursor:pointer; font-size:0.82rem; font-weight:600; white-space:nowrap; flex-shrink:0; }
+        .banner-contratistas .bc-close { background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--text-gray); padding:4px 6px; flex-shrink:0; }
+
+        /* Banner Cotizaciones */
+        .banner-cotiz { display:none; border-radius:15px; padding:15px 20px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05); border-left:5px solid #8b5cf6; background:linear-gradient(to right,#f5f3ff,white); }
+        .banner-cotiz.visible { display:flex; align-items:center; gap:12px; }
+        .banner-cotiz .bc-icon { font-size:1.7rem; flex-shrink:0; }
+        .banner-cotiz .bc-body { flex:1; font-size:0.88rem; color:var(--text-dark); }
+        .banner-cotiz .bc-btn  { padding:7px 13px; border-radius:8px; border:none; background:#8b5cf6; color:white; cursor:pointer; font-size:0.82rem; font-weight:600; flex-shrink:0; }
+
+        /* Panel Comunicaciones */
+        .comm-panel { background:white; border-radius:15px; padding:25px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:25px; }
+        .comm-panel-title { font-size:1.25rem; font-weight:700; color:var(--primary); margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid #e2e8f0; }
+        .comm-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; border-bottom:2px solid #e2e8f0; }
+        .comm-tab-btn { padding:9px 15px; border:none; background:transparent; color:var(--text-gray); font-size:0.88rem; font-weight:600; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.2s; border-radius:6px 6px 0 0; }
+        .comm-tab-btn:hover  { color:var(--primary); background:#f8fafc; }
+        .comm-tab-btn.active { color:var(--primary); border-bottom-color:var(--accent); background:#eff6ff; }
+        .comm-tab-content { display:none; }
+        .comm-tab-content.active { display:block; }
+        .msg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+        .msg-card { border:1px solid #e2e8f0; border-radius:12px; padding:16px; background:#fafbfc; }
+        .msg-card-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:7px; }
+        .msg-card-label.tipo-a { color:var(--success); }
+        .msg-card-label.tipo-b { color:var(--warning); }
+        .msg-card-label.tipo-c { color:#f97316; }
+        .msg-card-label.tipo-d { color:var(--danger); }
+        .msg-card-text { font-size:0.85rem; color:var(--text-dark); line-height:1.55; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:11px; margin-bottom:10px; white-space:pre-wrap; max-height:130px; overflow-y:auto; }
+        .msg-actions { display:flex; gap:8px; }
+        .msg-btn { flex:1; padding:8px 10px; border:none; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .msg-btn-copy { background:#f1f5f9; color:var(--text-dark); }
+        .msg-btn-copy:hover { background:#e2e8f0; }
+        .msg-btn-wa { background:#25D366; color:white; }
+        .msg-btn-wa:hover { background:#128C7E; }
+
+        /* Tracking */
+        .tracking-section { margin-top:22px; }
+        .tracking-section h4 { font-size:1.05rem; font-weight:700; color:var(--primary); margin-bottom:12px; }
+        .tracking-table-wrapper { overflow-x:auto; border-radius:12px; border:1px solid #e2e8f0; }
+        .tracking-table { width:100%; border-collapse:collapse; font-size:0.87rem; }
+        .tracking-table th { background:var(--primary); color:white; padding:10px 14px; text-align:center; font-weight:600; }
+        .tracking-table th:first-child { text-align:left; }
+        .tracking-table td { padding:9px 14px; border-bottom:1px solid #f1f5f9; text-align:center; }
+        .tracking-table td:first-child { text-align:left; font-weight:600; }
+        .tracking-table tr:hover { background:#f8fafc; }
+        .tracking-table tr:last-child td { border-bottom:none; }
+        .doc-status { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:0.78rem; font-weight:600; }
+        .doc-status.completo     { background:#d1fae5; color:#065f46; }
+        .doc-status.parcial      { background:#fef3c7; color:#92400e; }
+        .doc-status.sin-entregar { background:#fee2e2; color:#991b1b; }
+        .doc-status.pendiente    { background:#f1f5f9; color:#475569; }
+        .track-btn { padding:4px 9px; border-radius:6px; border:none; font-size:0.76rem; font-weight:600; cursor:pointer; margin:2px; color:white; }
+        .track-btn-ok  { background:var(--success); }
+        .track-btn-par { background:var(--warning); }
+        .track-btn-no  { background:var(--danger); }
+
+        /* Mini calendario */
+        .cal-section { margin-top:22px; }
+        .cal-section h4 { font-size:1.05rem; font-weight:700; color:var(--primary); margin-bottom:12px; }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+        .cal-header-day { text-align:center; font-size:0.72rem; font-weight:700; color:var(--text-gray); padding:5px 2px; }
+        .cal-day { min-height:48px; border-radius:7px; padding:5px; font-size:0.76rem; background:#f8fafc; border:1px solid #e2e8f0; }
+        .cal-day.other-month { opacity:0.3; }
+        .cal-day.today { background:#eff6ff; border-color:var(--accent); }
+        .cal-day-num { font-weight:700; font-size:0.83rem; color:var(--text-dark); }
+        .cal-event { font-size:0.68rem; margin-top:2px; line-height:1.3; }
+        .cal-event.done    { color:var(--success); }
+        .cal-event.pending { color:var(--warning); }
+        .cal-event.future  { color:#94a3b8; }
+        .cal-event.urgent  { color:var(--danger); font-weight:700; }
+
+        /* Cotizaciones */
+        .cotiz-panel { background:white; border-radius:15px; padding:25px; box-shadow:0 2px 10px rgba(0,0,0,0.05); margin-bottom:25px; }
+        .cotiz-panel-title { font-size:1.25rem; font-weight:700; color:var(--primary); margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid #e2e8f0; }
+        .cotiz-table-wrapper { overflow-x:auto; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px; }
+        .cotiz-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+        .cotiz-table th { background:var(--primary); color:white; padding:10px 11px; text-align:center; font-weight:600; white-space:nowrap; }
+        .cotiz-table th:first-child { text-align:left; }
+        .cotiz-table td { padding:9px 11px; border-bottom:1px solid #f1f5f9; text-align:center; vertical-align:top; line-height:1.45; }
+        .cotiz-table td:first-child { text-align:left; font-weight:600; }
+        .cotiz-table tr:nth-child(even) { background:#f8fafc; }
+        .cotiz-table tr:hover { background:#f0f6ff; }
+        .cotiz-table tr:last-child td { border-bottom:none; }
+        .mejor-badge { background:#d1fae5; color:#065f46; padding:2px 9px; border-radius:12px; font-weight:700; font-size:0.77rem; display:inline-block; margin-top:3px; }
+        .cotiz-price { font-weight:700; color:var(--primary); }
+        .cotiz-contact-btn { padding:4px 9px; border-radius:6px; border:none; background:#25D366; color:white; font-size:0.75rem; font-weight:600; cursor:pointer; margin-top:4px; display:block; width:100%; }
+        .cotiz-totales { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:22px; }
+        .cotiz-total-card { border-radius:12px; padding:18px; text-align:center; border:2px solid #e2e8f0; background:white; }
+        .cotiz-total-card.recomendado { border-color:var(--success); background:#ecfdf5; }
+        .cotiz-total-card .ct-label { font-size:0.85rem; color:var(--text-gray); margin-bottom:6px; }
+        .cotiz-total-card .ct-price { font-size:1.5rem; font-weight:700; color:var(--primary); }
+        .cotiz-total-card.recomendado .ct-price { color:var(--success); }
+
+        /* Carta modal */
+        .carta-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; align-items:center; justify-content:center; }
+        .carta-modal.active { display:flex; }
+        .carta-modal-inner { background:white; border-radius:16px; padding:28px; max-width:680px; width:92%; max-height:86vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .carta-preview-text { font-size:0.86rem; line-height:1.7; color:var(--text-dark); white-space:pre-wrap; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:18px; max-height:340px; overflow-y:auto; margin:14px 0; }
+
+        /* Progress bar */
+        .progress-bar-track { background:#e2e8f0; border-radius:20px; height:11px; overflow:hidden; margin:8px 0 4px; }
+        .progress-bar-fill { height:100%; background:linear-gradient(to right,var(--success),var(--accent)); border-radius:20px; transition:width 0.5s ease; }
+        .checklist-cotiz { list-style:none; margin-top:14px; }
+        .checklist-cotiz li { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:8px; margin-bottom:6px; font-size:0.88rem; border:1px solid #e2e8f0; background:white; transition:background 0.2s; }
+        .checklist-cotiz li.done { background:#ecfdf5; border-color:#a7f3d0; }
+        .checklist-cotiz li input[type="checkbox"] { width:17px; height:17px; cursor:pointer; accent-color:var(--success); flex-shrink:0; }
+        .checklist-cotiz .step-label { flex:1; }
+        .checklist-cotiz .step-fecha-input { font-size:0.78rem; border:1px solid #e2e8f0; border-radius:6px; padding:3px 7px; width:120px; }
     </style>
 </head>
 <body>
@@ -692,6 +820,16 @@
                     <div class="ab-title">Cargando estado del mes actual...</div>
                     <div class="ab-message">Verificando actividades pendientes para el mes en curso</div>
                 </div>
+            </div>
+
+            <!-- Banner Documentos Contratistas -->
+            <div id="bannerContratistasC1" class="banner-contratistas"></div>
+
+            <!-- Banner Cotizaciones Pendientes -->
+            <div id="bannerCotizaciones" class="banner-cotiz">
+                <div class="bc-icon">💰</div>
+                <div class="bc-body"><strong>Pendiente:</strong> Aprobar e implementar elementos de seguridad obligatorios (≈$3.6M). Cumplimiento Res. 0312/2019.</div>
+                <button class="bc-btn" onclick="showPrivateSection('herramientas')">Ver Cotizaciones</button>
             </div>
 
             <!-- Stats -->
@@ -1196,6 +1334,133 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ═══════════════════════════════════════════════════════
+                 📱 PANEL DE COMUNICACIONES SST
+                 ═══════════════════════════════════════════════════════ -->
+            <div id="tabCommC1" class="comm-panel" style="margin-top:25px;">
+                <div class="comm-panel-title">📱 Panel de Comunicaciones SST — Documentos Contratistas</div>
+                <div class="comm-tabs">
+                    <button class="comm-tab-btn active" data-tab="sosaC1"            onclick="showCommTabC1('sosaC1')">👷 SOSA (Isabel)</button>
+                    <button class="comm-tab-btn"        data-tab="serdanC1"          onclick="showCommTabC1('serdanC1')">👷 SERDÁN (Gina)</button>
+                    <button class="comm-tab-btn"        data-tab="adminConvC1"       onclick="showCommTabC1('adminConvC1')">🏢 Administradora Conv. 1</button>
+                </div>
+                <div id="commTab_sosaC1" class="comm-tab-content active">
+                    <div class="msg-grid" id="msgGrid_sosaC1"></div>
+                    <div id="tracking_sosaC1"></div>
+                    <div class="cal-section">
+                        <h4>📅 Calendario de Seguimiento — Mes Actual</h4>
+                        <div id="calSST_sosaC1"></div>
+                    </div>
+                </div>
+                <div id="commTab_serdanC1" class="comm-tab-content">
+                    <div class="msg-grid" id="msgGrid_serdanC1"></div>
+                    <div id="tracking_serdanC1"></div>
+                </div>
+                <div id="commTab_adminConvC1" class="comm-tab-content">
+                    <p style="font-size:0.88rem;color:var(--text-gray);margin-bottom:14px;">
+                        ℹ️ Mensaje de aviso formal a la administradora cuando algún contratista NO entrega documentos después del día 10.
+                    </p>
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:0.85rem;font-weight:600;color:var(--text-dark);">Teléfono administradora Convivienda 1:</label>
+                        <input type="tel" id="telAdminConv1" placeholder="+57 300 0000000"
+                               style="display:block;margin-top:6px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.88rem;width:240px;"
+                               oninput="localStorage.setItem('telAdminConv1',this.value)">
+                    </div>
+                    <div class="msg-grid" id="msgGrid_adminConvC1"></div>
+                </div>
+            </div>
+
+            <!-- ═══════════════════════════════════════════════════════
+                 💰 COTIZACIONES Y COMPRAS SST
+                 ═══════════════════════════════════════════════════════ -->
+            <div id="tabCotiz" class="cotiz-panel">
+                <div class="cotiz-panel-title">💰 Cotizaciones y Compras SST — Elementos Obligatorios 2026</div>
+
+                <!-- Totales resumen -->
+                <div class="cotiz-totales">
+                    <div class="cotiz-total-card">
+                        <div class="ct-label">💡 Opción Económica</div>
+                        <div class="ct-price">$3.439.000</div>
+                    </div>
+                    <div class="cotiz-total-card recomendado">
+                        <div class="ct-label">⭐ Opción Recomendada</div>
+                        <div class="ct-price">$3.594.000</div>
+                        <div style="font-size:0.75rem;color:var(--success);margin-top:4px;font-weight:700;">MEJOR RELACIÓN CALIDAD/PRECIO</div>
+                    </div>
+                    <div class="cotiz-total-card">
+                        <div class="ct-label">🏆 Opción Premium</div>
+                        <div class="ct-price">$4.355.000</div>
+                    </div>
+                </div>
+
+                <!-- Tabla comparativa -->
+                <div class="cotiz-table-wrapper">
+                    <table class="cotiz-table" id="cotizTabla">
+                        <thead>
+                            <tr>
+                                <th style="min-width:160px;">Elemento</th>
+                                <th style="min-width:160px;">Proveedor 1</th>
+                                <th style="min-width:160px;">Proveedor 2</th>
+                                <th style="min-width:160px;">Proveedor 3</th>
+                                <th style="min-width:120px;">Mejor Opción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cotizTbody">
+                            <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-gray);">⏳ Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Generador de carta -->
+                <div style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:20px;">
+                    <h4 style="font-size:1.05rem;font-weight:700;color:var(--primary);margin-bottom:14px;">📄 Generador de Carta para Administradora</h4>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px;">
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:5px;">Nombre administradora:</label>
+                            <input type="text" id="cartaAdminNombre" placeholder="Sra. María González"
+                                   style="width:100%;padding:8px 11px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.88rem;"
+                                   oninput="actualizarPreviewCarta()">
+                        </div>
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:5px;">Fecha:</label>
+                            <input type="date" id="cartaFecha"
+                                   style="width:100%;padding:8px 11px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.88rem;"
+                                   oninput="actualizarPreviewCarta()">
+                        </div>
+                        <div>
+                            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:5px;">Opción de inversión:</label>
+                            <select id="cartaOpcion" style="width:100%;padding:8px 11px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.88rem;" onchange="actualizarPreviewCarta()">
+                                <option value="economica">💡 Económica — $3.439.000</option>
+                                <option value="recomendada" selected>⭐ Recomendada — $3.594.000</option>
+                                <option value="premium">🏆 Premium — $4.355.000</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem;" onclick="mostrarCartaModal()">📄 Vista Previa</button>
+                        <button class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem;background:#25D366;" onclick="copiarCarta()">📋 Copiar Carta</button>
+                        <button class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem;background:#f97316;" onclick="imprimirCarta()">🖨️ Imprimir / PDF</button>
+                    </div>
+                </div>
+
+                <!-- Tracking de aprobación -->
+                <div>
+                    <h4 style="font-size:1.05rem;font-weight:700;color:var(--primary);margin-bottom:8px;">📊 Tracking de Aprobación y Compra</h4>
+                    <div class="progress-bar-track"><div class="progress-bar-fill" id="cotizProgressBar" style="width:0%"></div></div>
+                    <div style="text-align:right;font-size:0.82rem;color:var(--text-gray);margin-bottom:12px;" id="cotizProgressLabel">0% completado</div>
+                    <ul class="checklist-cotiz" id="checklistCotiz">
+                        <li id="step_carta"><input type="checkbox" onchange="guardarStepCotiz('carta',this.checked)"><span class="step-label">Carta enviada a administradora</span><input type="date" class="step-fecha-input" id="fecha_carta" onchange="guardarFechaCotiz('carta',this.value)" placeholder="Fecha"></li>
+                        <li id="step_aprobacion"><input type="checkbox" onchange="guardarStepCotiz('aprobacion',this.checked)"><span class="step-label">Aprobación recibida</span><input type="date" class="step-fecha-input" id="fecha_aprobacion" onchange="guardarFechaCotiz('aprobacion',this.value)" placeholder="Fecha"></li>
+                        <li id="step_pedidos"><input type="checkbox" onchange="guardarStepCotiz('pedidos',this.checked)"><span class="step-label">Pedidos realizados a proveedores</span><input type="date" class="step-fecha-input" id="fecha_pedidos" onchange="guardarFechaCotiz('pedidos',this.value)" placeholder="Fecha"></li>
+                        <li id="step_anticipo"><input type="checkbox" onchange="guardarStepCotiz('anticipo',this.checked)"><span class="step-label">Anticipo pagado 50%</span><input type="date" class="step-fecha-input" id="fecha_anticipo" onchange="guardarFechaCotiz('anticipo',this.value)" placeholder="Fecha"></li>
+                        <li id="step_recepcion"><input type="checkbox" onchange="guardarStepCotiz('recepcion',this.checked)"><span class="step-label">Productos recibidos</span><input type="date" class="step-fecha-input" id="fecha_recepcion" onchange="guardarFechaCotiz('recepcion',this.value)" placeholder="Fecha"></li>
+                        <li id="step_instalacion"><input type="checkbox" onchange="guardarStepCotiz('instalacion',this.checked)"><span class="step-label">Instalación completada</span><input type="date" class="step-fecha-input" id="fecha_instalacion" onchange="guardarFechaCotiz('instalacion',this.value)" placeholder="Fecha"></li>
+                        <li id="step_saldo"><input type="checkbox" onchange="guardarStepCotiz('saldo',this.checked)"><span class="step-label">Saldo pagado 50%</span><input type="date" class="step-fecha-input" id="fecha_saldo" onchange="guardarFechaCotiz('saldo',this.value)" placeholder="Fecha"></li>
+                        <li id="step_docs"><input type="checkbox" onchange="guardarStepCotiz('docs',this.checked)"><span class="step-label">Documentación actualizada en Drive</span><input type="date" class="step-fecha-input" id="fecha_docs" onchange="guardarFechaCotiz('docs',this.value)" placeholder="Fecha"></li>
+                    </ul>
+                </div>
+            </div>
         </section>
 
         <!-- FOOTER -->
@@ -1270,7 +1535,12 @@
             actualizarGrillaPAT();
             actualizarBannerAlerta();
             actualizarBannerDashboard();
+            actualizarBannerContratistasC1();
+            actualizarBannerCotizaciones();
             iniciarNotificacionesConv();
+            // Fecha por defecto para la carta
+            var fc = document.getElementById('cartaFecha');
+            if (fc && !fc.value) fc.value = new Date().toISOString().split('T')[0];
         };
 
         function attemptLogin() {
@@ -1299,7 +1569,7 @@
                     const btnMap = { ejecucion: 'btnEjecucion', herramientas: 'btnHerramientas' };
                     if (btnMap[sid]) document.getElementById(btnMap[sid]).classList.add('active');
                     if (sid === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); cargarNotificaciones(); }
-                    if (sid === 'herramientas') { actualizarPanelAdmin(); actualizarArchivoDocumentos(); }
+                    if (sid === 'herramientas') { actualizarPanelAdmin(); actualizarArchivoDocumentos(); renderCotizaciones(); cargarTrackingCotizaciones(); renderMensajesTabC1('sosaC1'); }
                 }
 
                 actualizarDashboard2026();
@@ -1342,7 +1612,13 @@
             }
             showSection(sectionId);
             if (sectionId === 'ejecucion')    { actualizarTablaEjecucion(); actualizarBadgesEjecucion(); actualizarArchivoDocumentos(); actualizarBannerAlerta(); cargarNotificaciones(); }
-            if (sectionId === 'herramientas') { actualizarPanelAdmin(); actualizarArchivoDocumentos(); }
+            if (sectionId === 'herramientas') {
+                actualizarPanelAdmin();
+                actualizarArchivoDocumentos();
+                renderCotizaciones();
+                cargarTrackingCotizaciones();
+                renderMensajesTabC1('sosaC1');
+            }
         }
 
         // ═══════════════════════════════════════════════════════════════
@@ -2296,6 +2572,7 @@
             actualizarGrillaPAT();
             actualizarBannerAlerta();
             actualizarBannerDashboard();
+            actualizarBannerContratistasC1();
         }, 30000);
 
         document.addEventListener('visibilitychange', function() {
@@ -2304,11 +2581,564 @@
                 actualizarGrillaPAT();
                 actualizarBannerAlerta();
                 actualizarBannerDashboard();
+                actualizarBannerContratistasC1();
                 verificarYEnviarNotificacionesConv();
             }
         });
 
+        // ═══════════════════════════════════════════════════════════════
+        // SISTEMA COMUNICACIONES SST + COTIZACIONES — Convivienda 1
+        // ═══════════════════════════════════════════════════════════════
+
+        var MESES_SST_C1 = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                             'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+        // --- TOAST ---
+        function mostrarToast(mensaje, tipo) {
+            tipo = tipo || 'success';
+            var container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + tipo;
+            toast.textContent = mensaje;
+            container.appendChild(toast);
+            setTimeout(function() {
+                toast.style.animation = 'toastOut 0.3s ease forwards';
+                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+            }, 3000);
+        }
+
+        function copiarMensaje(texto) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(texto).then(function() {
+                    mostrarToast('✅ Mensaje copiado al portapapeles');
+                }).catch(function() { copiarFallbackC1(texto); });
+            } else { copiarFallbackC1(texto); }
+        }
+        function copiarFallbackC1(texto) {
+            var ta = document.createElement('textarea');
+            ta.value = texto; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+            document.body.removeChild(ta); mostrarToast('✅ Mensaje copiado');
+        }
+        function enviarWhatsApp(numero, mensaje) {
+            var url = 'https://wa.me/' + numero.replace(/\D/g,'') + '?text=' + encodeURIComponent(mensaje);
+            window.open(url, '_blank');
+        }
+
+        // --- CONTRATISTAS ---
+        var CONTRATISTAS_C1 = {
+            sosaC1:      { nombre:'Isabel Forero',  empresa:'SOSA',   telefono:'573505403570' },
+            serdanC1:    { nombre:'Gina Poveda',    empresa:'SERDÁN', telefono:'573165258530' },
+            adminConvC1: { nombre:'Administradora', empresa:'Conv. 1', telefono:'' }
+        };
+
+        function getMensajeC1(tipo, tabKey) {
+            var c = CONTRATISTAS_C1[tabKey];
+            if (!c) return '';
+            var ahora = new Date();
+            var mes = MESES_SST_C1[ahora.getMonth()];
+            var año = ahora.getFullYear();
+            var msgs = {
+                A: 'Buenos días ' + c.nombre + ', le escribo como responsable SST del Edificio Convivienda 1 para realizarle la Solicitud mensual de documentos SST ' + mes + ' ' + año + ':\n\n✅ Afiliación ARL vigente\n✅ Certificado capacitación SST\n✅ Constancia entrega EPP\n✅ Examen médico ocupacional vigente\n\nPlazo para envío: 10 de ' + mes + ' ' + año + '.\nNormativa: Resolución 0312/2019.\n\nCarla Castellano — C.E. 679955',
+                B: 'Hola ' + c.nombre + ', le envío un cordial recordatorio: los documentos SST de ' + mes + ' ' + año + ' están pendientes de recepción. Quedan 2 días para el plazo (10 de ' + mes + '). Favor confirmar el envío. Muchas gracias,\n\nCarla',
+                C: c.nombre + ', HOY vence el plazo para entrega de documentos SST de ' + mes + ' ' + año + '.\n\n⚠️ SIN ESTOS DOCUMENTOS NO PUEDO CERTIFICAR CUMPLIMIENTO.\n\nFavor enviar URGENTE. De no recibirlos, debo informar a la administración.\n\nCarla — C.E. 679955',
+                D: 'Señora Administradora,\n\nInformo formalmente: 🚨 El contratista ' + c.empresa + ' NO ha entregado los documentos SST obligatorios correspondientes a ' + mes + ' ' + año + '.\n\nSolicito: RETENER el pago mensual hasta subsanar la situación.\n\nRiesgo legal: Multa Ministerio de Trabajo, responsabilidad solidaria del edificio.\n\nCarla Castellano — C.E. 679955'
+            };
+            return msgs[tipo] || '';
+        }
+
+        function showCommTabC1(tab) {
+            document.querySelectorAll('.comm-tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.comm-tab-content').forEach(function(c) { c.classList.remove('active'); });
+            var btn = document.querySelector('.comm-tab-btn[data-tab="' + tab + '"]');
+            var content = document.getElementById('commTab_' + tab);
+            if (btn) btn.classList.add('active');
+            if (content) { content.classList.add('active'); renderMensajesTabC1(tab); }
+        }
+
+        function renderMensajesTabC1(tab) {
+            var esAdmin = (tab === 'adminConvC1');
+            var tipos = esAdmin
+                ? [{ key:'D', label:'Aviso formal (Día 11+)', cls:'tipo-d' }]
+                : [
+                    { key:'A', label:'Solicitud Inicial (Día 1)',      cls:'tipo-a' },
+                    { key:'B', label:'Recordatorio Amable (Día 8)',    cls:'tipo-b' },
+                    { key:'C', label:'Recordatorio Urgente (Día 10)',  cls:'tipo-c' },
+                    { key:'D', label:'Aviso Administradora (Día 11+)', cls:'tipo-d' }
+                  ];
+            var c = CONTRATISTAS_C1[tab];
+            var tel = c ? c.telefono : '';
+            if (esAdmin) {
+                tel = localStorage.getItem('telAdminConv1') || '';
+                var inputEl = document.getElementById('telAdminConv1');
+                if (inputEl) inputEl.value = tel;
+            }
+            var grid = document.getElementById('msgGrid_' + tab);
+            if (!grid) return;
+            var html = '';
+            tipos.forEach(function(t) {
+                var msg = getMensajeC1(t.key, tab);
+                var telFinal = esAdmin ? (localStorage.getItem('telAdminConv1') || '') : tel;
+                var safeMsg = msg.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+                html += '<div class="msg-card">'
+                    + '<div class="msg-card-label ' + t.cls + '">' + t.label + '</div>'
+                    + '<div class="msg-card-text">' + msg.replace(/\n/g,'<br>') + '</div>'
+                    + '<div class="msg-actions">'
+                    + '<button class="msg-btn msg-btn-copy" onclick="copiarMensaje(\'' + safeMsg + '\')">📋 Copiar</button>'
+                    + (telFinal ? '<button class="msg-btn msg-btn-wa" onclick="enviarWhatsApp(\'' + telFinal + '\',\'' + safeMsg + '\')">📱 WhatsApp</button>' : '')
+                    + '</div></div>';
+            });
+            grid.innerHTML = html;
+            if (!esAdmin) {
+                renderTrackingC1(tab);
+                var calEl = document.getElementById('calSST_' + tab);
+                if (calEl) renderCalendarioSST_C1('calSST_' + tab, 25);
+            }
+        }
+
+        function renderTrackingC1(tab) {
+            var container = document.getElementById('tracking_' + tab);
+            if (!container) return;
+            var ahora = new Date();
+            var mesActual = ahora.getMonth();
+            var año = ahora.getFullYear();
+            var rows = '';
+            for (var i = -3; i <= 0; i++) {
+                (function(idx) {
+                    var m = ((mesActual + idx) % 12 + 12) % 12;
+                    var a = año + Math.floor((mesActual + idx) / 12);
+                    if (mesActual + idx < 0) a = año - 1;
+                    var clave = a + '-' + String(m + 1).padStart(2,'0');
+                    var esActual = (idx === 0);
+                    rows += '<tr>'
+                        + '<td>' + MESES_SST_C1[m] + ' ' + a + (esActual ? ' <span style="color:var(--accent);font-size:0.73rem;">(mes actual)</span>' : '') + '</td>'
+                        + '<td id="trk_' + tab + '_' + clave + '"><span class="doc-status pendiente">⏳ Pendiente</span></td>'
+                        + '<td>'
+                        + '<button class="track-btn track-btn-ok"  onclick="marcarDocC1(\'' + tab + '\',\'' + clave + '\',\'completo\')">✅</button>'
+                        + '<button class="track-btn track-btn-par" onclick="marcarDocC1(\'' + tab + '\',\'' + clave + '\',\'parcial\')">🟡</button>'
+                        + '<button class="track-btn track-btn-no"  onclick="marcarDocC1(\'' + tab + '\',\'' + clave + '\',\'sin-entregar\')">❌</button>'
+                        + '<button class="track-btn" style="background:#25D366;" onclick="enviarWhatsAppContratistaC1(\'' + tab + '\',\'' + clave + '\')">📱</button>'
+                        + '</td></tr>';
+                })(i);
+            }
+            container.innerHTML = '<div class="tracking-section"><h4>📊 Registro de Documentos Recibidos</h4>'
+                + '<div class="tracking-table-wrapper"><table class="tracking-table">'
+                + '<thead><tr><th>Mes</th><th>Estado</th><th>Acciones</th></tr></thead>'
+                + '<tbody>' + rows + '</tbody></table></div></div>';
+            cargarTrackingC1(tab);
+        }
+
+        function cargarTrackingC1(tab) {
+            var ahora = new Date();
+            var mesActual = ahora.getMonth();
+            var año = ahora.getFullYear();
+            for (var i = -3; i <= 0; i++) {
+                (function(idx) {
+                    var m = ((mesActual + idx) % 12 + 12) % 12;
+                    var a = año + Math.floor((mesActual + idx) / 12);
+                    if (mesActual + idx < 0) a = año - 1;
+                    var clave = a + '-' + String(m + 1).padStart(2,'0');
+                    // Normalize key: sosaC1 → sosa, serdanC1 → serdan
+                    var fbKey = tab.replace('C1','');
+                    database.ref('edificios/' + EDIFICIO_ID + '/documentos-contratistas/' + clave + '/' + fbKey).once('value').then(function(snap) {
+                        var el = document.getElementById('trk_' + tab + '_' + clave);
+                        if (!el) return;
+                        if (!snap.exists()) { el.innerHTML = '<span class="doc-status pendiente">⏳ Pendiente</span>'; return; }
+                        var d = snap.val();
+                        if (d.estado === 'completo')      el.innerHTML = '<span class="doc-status completo">✅ Completo</span>';
+                        else if (d.estado === 'parcial')  el.innerHTML = '<span class="doc-status parcial">🟡 Parcial (' + ((d.documentos||[]).length) + '/4)</span>';
+                        else                              el.innerHTML = '<span class="doc-status sin-entregar">❌ Sin entregar</span>';
+                    });
+                })(i);
+            }
+        }
+
+        function marcarDocC1(tab, clave, estado) {
+            var fbKey = tab.replace('C1','');
+            var data = { estado: estado, fecha: new Date().toISOString() };
+            if (estado === 'parcial') {
+                var opciones = ['ARL','Capacitación','EPP','Examen médico'];
+                var docs = opciones.filter(function(d) { return confirm('¿Recibido: ' + d + '?'); });
+                data.documentos = docs;
+            }
+            database.ref('edificios/' + EDIFICIO_ID + '/documentos-contratistas/' + clave + '/' + fbKey).update(data).then(function() {
+                mostrarToast('✅ Estado guardado');
+                var el = document.getElementById('trk_' + tab + '_' + clave);
+                if (el) {
+                    if (estado === 'completo')      el.innerHTML = '<span class="doc-status completo">✅ Completo</span>';
+                    else if (estado === 'parcial')  el.innerHTML = '<span class="doc-status parcial">🟡 Parcial (' + ((data.documentos||[]).length) + '/4)</span>';
+                    else                            el.innerHTML = '<span class="doc-status sin-entregar">❌ Sin entregar</span>';
+                }
+                actualizarBannerContratistasC1();
+            }).catch(function() { mostrarToast('❌ Error al guardar', 'error'); });
+        }
+
+        function enviarWhatsAppContratistaC1(tab, clave) {
+            var c = CONTRATISTAS_C1[tab];
+            if (!c || !c.telefono) { mostrarToast('Sin teléfono configurado', 'warning'); return; }
+            var ahora = new Date();
+            var dia = ahora.getDate();
+            var tipoMsg = dia >= 11 ? 'D' : (dia === 10 ? 'C' : (dia >= 8 ? 'B' : 'A'));
+            var msg = getMensajeC1(tipoMsg, tab);
+            enviarWhatsApp(c.telefono, msg);
+        }
+
+        // --- BANNER CONTRATISTAS C1 ---
+        function actualizarBannerContratistasC1() {
+            var banner = document.getElementById('bannerContratistasC1');
+            if (!banner) return;
+            var hoy = new Date();
+            var dia = hoy.getDate();
+            var mes = hoy.getMonth();
+            var año = hoy.getFullYear();
+            var clave = año + '-' + String(mes + 1).padStart(2,'0');
+            var mesNombre = MESES_SST_C1[mes];
+            var cerradoKey = 'bcC1_' + clave + '_' + dia;
+            if (localStorage.getItem(cerradoKey)) return;
+
+            Promise.all([
+                database.ref('edificios/' + EDIFICIO_ID + '/documentos-contratistas/' + clave + '/sosa').once('value'),
+                database.ref('edificios/' + EDIFICIO_ID + '/documentos-contratistas/' + clave + '/serdan').once('value')
+            ]).then(function(snaps) {
+                var snapSosa = snaps[0], snapSerdan = snaps[1];
+                var sosaOk = snapSosa.exists() && snapSosa.val().estado === 'completo';
+                var serdanOk = snapSerdan.exists() && snapSerdan.val().estado === 'completo';
+                var sosaPend = !sosaOk;
+                var serdanPend = !serdanOk;
+                var icon='', title='', msg='', cls='', btnHTML='';
+                var pendList = (sosaPend?'SOSA':'') + (sosaPend&&serdanPend?' y ':'') + (serdanPend?'SERDÁN':'');
+                if (!pendList) return;
+
+                if (dia >= 1 && dia <= 7) {
+                    icon='📧'; cls='info';
+                    title='Solicitar documentos SST — Plazo día 10 de ' + mesNombre;
+                    msg='Enviar solicitud inicial a: ' + pendList;
+                    btnHTML='<button class="bc-btn" onclick="showPrivateSection(\'herramientas\')">📱 Ir a Comunicaciones</button>';
+                } else if (dia >= 8 && dia <= 9) {
+                    icon='⏰'; cls='warning';
+                    title='Quedan ' + (10-dia) + ' día(s) — Documentos SST pendientes';
+                    msg='Recordatorio pendiente para: ' + pendList;
+                    btnHTML='<button class="bc-btn" onclick="showPrivateSection(\'herramientas\')">📱 Enviar Recordatorio</button>';
+                } else if (dia === 10) {
+                    icon='🚨'; cls='urgente';
+                    title='HOY vence el plazo de documentos SST de ' + mesNombre;
+                    msg='Verificar recepción de: ' + pendList;
+                    btnHTML='<button class="bc-btn" onclick="showPrivateSection(\'herramientas\')">⚠️ Ver estado</button>';
+                } else if (dia > 10) {
+                    icon='⚠️'; cls='urgente';
+                    title='Documentos SST no recibidos — Considerar aviso a administradora';
+                    msg='Sin documentos: ' + pendList + '. Día actual: ' + dia + ' de ' + mesNombre;
+                    btnHTML='<button class="bc-btn" onclick="showPrivateSection(\'herramientas\')">📋 Gestionar</button>';
+                }
+
+                if (icon) {
+                    banner.className = 'banner-contratistas ' + cls;
+                    banner.innerHTML = '<div class="bc-icon">' + icon + '</div>'
+                        + '<div class="bc-body"><div class="bc-title">' + title + '</div><div class="bc-msg">' + msg + '</div></div>'
+                        + btnHTML
+                        + '<button class="bc-close" onclick="this.closest(\'.banner-contratistas\').style.display=\'none\';localStorage.setItem(\'' + cerradoKey + '\',\'1\')">✕</button>';
+                }
+            });
+        }
+
+        // --- BANNER COTIZACIONES ---
+        function actualizarBannerCotizaciones() {
+            var banner = document.getElementById('bannerCotizaciones');
+            if (!banner) return;
+            database.ref('edificios/' + EDIFICIO_ID + '/cotizaciones/2026/completado').once('value').then(function(snap) {
+                var completado = snap.exists() && snap.val() === true;
+                banner.className = completado ? 'banner-cotiz' : 'banner-cotiz visible';
+            }).catch(function() {
+                banner.className = 'banner-cotiz visible';
+            });
+        }
+
+        // --- MINI CALENDARIO C1 ---
+        function renderCalendarioSST_C1(containerId, deadline) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+            var ahora = new Date();
+            var dia = ahora.getDate();
+            var mes = ahora.getMonth();
+            var año = ahora.getFullYear();
+            var eventos = { 1:'📧 Solicitar docs', 8:'⏰ Recordatorio', 10:'🚨 Plazo docs', 11:'⚠️ Avisar admón.', 28:'📄 Generar informes' };
+            eventos[deadline] = '📋 Deadline inspección';
+            var primerDia = new Date(año, mes, 1).getDay();
+            var diasEnMes = new Date(año, mes + 1, 0).getDate();
+            var offset = primerDia === 0 ? 6 : primerDia - 1;
+            var html = '<div class="cal-grid">';
+            ['Lu','Ma','Mi','Ju','Vi','Sa','Do'].forEach(function(d) { html += '<div class="cal-header-day">' + d + '</div>'; });
+            for (var i = 0; i < offset; i++) html += '<div class="cal-day other-month"></div>';
+            for (var d = 1; d <= diasEnMes; d++) {
+                var ev = eventos[d];
+                var cls = d === dia ? 'cal-day today' : 'cal-day';
+                var evCls = ev ? (d < dia ? 'done' : (d === 10 || d === deadline ? 'urgent' : 'pending')) : 'future';
+                html += '<div class="' + cls + '"><div class="cal-day-num">' + d + '</div>'
+                    + (ev ? '<div class="cal-event ' + evCls + '">' + ev.split(' ')[0] + '</div>' : '')
+                    + '</div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // COTIZACIONES SST — Datos y funciones
+        // ═══════════════════════════════════════════════════════════════
+
+        var PROVEEDORES_SST = [
+            {
+                elemento: '🩺 Botiquín Tipo A Empresarial',
+                p1: { nombre:'Servibot', precio:'$180.000', tel:'573001234567', obs:'IVA incluido, entrega 24h' },
+                p2: { nombre:'Cruz Roja Col.', precio:'$220.000', tel:'573109876543', obs:'Certificado oficial' },
+                p3: { nombre:'Prosegur', precio:'$165.000', tel:'573205555111', obs:'Sin instalación' },
+                mejor: 'p1'
+            },
+            {
+                elemento: '🚑 Camilla Rígida + Inmovilizador Cervical',
+                p1: { nombre:'MedEquip', precio:'$480.000', tel:'573001234567', obs:'Aluminio liviano' },
+                p2: { nombre:'Prosegur', precio:'$520.000', tel:'573205555111', obs:'Incluye bolsa transporte' },
+                p3: { nombre:'Ferresalud', precio:'$445.000', tel:'573009988776', obs:'Garantía 1 año' },
+                mejor: 'p3'
+            },
+            {
+                elemento: '💡 Luces de Emergencia LED (×10)',
+                p1: { nombre:'Homecenter', precio:'$590.000', tel:'3231234567', obs:'Recarga 8h, 2h de autonomía' },
+                p2: { nombre:'Electricor', precio:'$540.000', tel:'3218887766', obs:'Instalación incluida' },
+                p3: { nombre:'Ferrelectricos', precio:'$620.000', tel:'3204443322', obs:'Garantía 2 años' },
+                mejor: 'p2'
+            },
+            {
+                elemento: '🔏 Señalización Fotoluminiscente (Kit 23 señales + planos)',
+                p1: { nombre:'SeñalPro', precio:'$680.000', tel:'3001112233', obs:'Incluye planos señalización' },
+                p2: { nombre:'Segurity+', precio:'$720.000', tel:'3157778899', obs:'Instalación incluida' },
+                p3: { nombre:'SignalCo', precio:'$650.000', tel:'3104445566', obs:'Sin instalación' },
+                mejor: 'p1'
+            },
+            {
+                elemento: '🦶 Cinta Antideslizante (80 metros)',
+                p1: { nombre:'Ferretería Industrial', precio:'$240.000', tel:'3016667788', obs:'Rollo 80m, varios colores' },
+                p2: { nombre:'Homecenter', precio:'$280.000', tel:'3231234567', obs:'Garantía adhesivo 3 años' },
+                p3: { nombre:'Grainger', precio:'$260.000', tel:'3009001122', obs:'Certificado RETIE' },
+                mejor: 'p1'
+            },
+            {
+                elemento: '🔥 Extintor ABC 20lb Sótano',
+                p1: { nombre:'Extintec', precio:'$185.000', tel:'3005554433', obs:'Recarga incluida 1er año' },
+                p2: { nombre:'Prosegur', precio:'$210.000', tel:'573205555111', obs:'Certificado NSF' },
+                p3: { nombre:'SafeFire', precio:'$195.000', tel:'3112223344', obs:'Soporte pared incluido' },
+                mejor: 'p1'
+            },
+            {
+                elemento: '🚧 Señalización Adicional (6 señales)',
+                p1: { nombre:'SeñalPro', precio:'$84.000', tel:'3001112233', obs:'Vinilo + aluminio' },
+                p2: { nombre:'Segurity+', precio:'$99.000', tel:'3157778899', obs:'Incluye instalación' },
+                p3: { nombre:'SignalCo', precio:'$75.000', tel:'3104445566', obs:'Solo vinilo' },
+                mejor: 'p3'
+            }
+        ];
+
+        function renderCotizaciones() {
+            var tbody = document.getElementById('cotizTbody');
+            if (!tbody) return;
+            var html = '';
+            PROVEEDORES_SST.forEach(function(item) {
+                var ps = [item.p1, item.p2, item.p3];
+                var pkeys = ['p1','p2','p3'];
+                html += '<tr><td>' + item.elemento + '</td>';
+                ps.forEach(function(p, idx) {
+                    var esMejor = item.mejor === pkeys[idx];
+                    html += '<td>'
+                        + '<strong>' + p.nombre + '</strong><br>'
+                        + '<span class="cotiz-price">' + p.precio + '</span><br>'
+                        + '<span style="font-size:0.76rem;color:var(--text-gray);">' + p.obs + '</span>'
+                        + (esMejor ? '<br><span class="mejor-badge">⭐ Mejor</span>' : '')
+                        + '<br><button class="cotiz-contact-btn" onclick="enviarWhatsApp(\'' + p.tel + '\',\'Hola, solicito cotización para SST: ' + item.elemento.replace(/'/g,"\\'") + '\')">📞 Contactar</button>'
+                        + '</td>';
+                });
+                var mejorP = item[item.mejor];
+                html += '<td style="font-weight:700;color:var(--success);">' + mejorP.nombre + '<br><span class="cotiz-price">' + mejorP.precio + '</span></td>';
+                html += '</tr>';
+            });
+            tbody.innerHTML = html;
+        }
+
+        // --- CARTA PARA ADMINISTRADORA ---
+        var PRECIOS_CARTA = { economica: '$3.439.000', recomendada: '$3.594.000', premium: '$4.355.000' };
+        var LABELS_CARTA  = { economica: 'Económica', recomendada: 'Recomendada ⭐', premium: 'Premium' };
+
+        function generarTextoCarta() {
+            var admin = document.getElementById('cartaAdminNombre') ? document.getElementById('cartaAdminNombre').value || 'Señora Administradora' : 'Señora Administradora';
+            var fechaEl = document.getElementById('cartaFecha');
+            var fecha = fechaEl && fechaEl.value ? new Date(fechaEl.value + 'T00:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'}) : new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+            var opcion = document.getElementById('cartaOpcion') ? document.getElementById('cartaOpcion').value : 'recomendada';
+            var precio = PRECIOS_CARTA[opcion];
+            var labelOp = LABELS_CARTA[opcion];
+
+            return 'Bogotá D.C., ' + fecha + '\n\n'
+                + admin + '\n'
+                + 'Administradora — Edificio Convivienda 1\n'
+                + 'CR 10a #138-71, Usaquén | NIT: 830112728-5\n\n'
+                + 'Asunto: SOLICITUD DE APROBACIÓN — Elementos de Seguridad Obligatorios SG-SST 2026\n\n'
+                + 'Respetada Administradora,\n\n'
+                + 'En cumplimiento de mis funciones como profesional responsable del Sistema de Gestión de Seguridad y Salud en el Trabajo (SG-SST) del edificio, y en aplicación de la Resolución 0312 de 2019 del Ministerio de Trabajo, me permito presentar la siguiente solicitud formal.\n\n'
+                + '═══════════════════════════════\n'
+                + 'NO CONFORMIDADES IDENTIFICADAS\n'
+                + '═══════════════════════════════\n\n'
+                + '🔴 CRÍTICAS (requieren acción inmediata):\n'
+                + '  • Botiquín de primeros auxilios Tipo A: AUSENTE\n'
+                + '  • Camilla rígida + inmovilizador cervical: AUSENTE\n'
+                + '  • Luces de emergencia LED: INSUFICIENTES\n'
+                + '  • Señalización fotoluminiscente: INCOMPLETA\n\n'
+                + '🟡 IMPORTANTES:\n'
+                + '  • Cinta antideslizante en escaleras: FALTANTE\n'
+                + '  • Extintor ABC sótano: REQUIERE REPOSICIÓN\n'
+                + '  • Señalización adicional: INCOMPLETA\n\n'
+                + '═══════════════════════════════\n'
+                + 'RIESGO LEGAL\n'
+                + '═══════════════════════════════\n\n'
+                + '⚠️ La ausencia de estos elementos puede generar:\n'
+                + '  • Multas del Ministerio de Trabajo (hasta 500 SMLMV)\n'
+                + '  • Responsabilidad solidaria de la administración\n'
+                + '  • Cierre temporal del establecimiento\n'
+                + '  • Responsabilidad civil ante accidentes\n\n'
+                + '═══════════════════════════════\n'
+                + 'INVERSIÓN REQUERIDA — Opción ' + labelOp + '\n'
+                + '═══════════════════════════════\n\n'
+                + '  Total estimado: ' + precio + '\n'
+                + '  Condición de pago: 50% anticipo + 50% contra entrega\n\n'
+                + 'Solicito respetuosamente su aprobación para proceder con la adquisición e instalación de estos elementos, garantizando así el cumplimiento normativo del edificio y la seguridad de todos sus residentes y trabajadores.\n\n'
+                + 'Quedo atenta a sus indicaciones.\n\n'
+                + 'Cordialmente,\n\n'
+                + 'Carla Castellano Madriz\n'
+                + 'C.E. 679955\n'
+                + 'Profesional SST — SG-SST Convivienda 1\n'
+                + 'Tel: +57 302 6662046';
+        }
+
+        function actualizarPreviewCarta() {
+            var preview = document.getElementById('cartaPreviewContent');
+            if (preview) preview.textContent = generarTextoCarta();
+        }
+
+        function mostrarCartaModal() {
+            actualizarPreviewCarta();
+            document.getElementById('cartaModal').classList.add('active');
+        }
+
+        function copiarCarta() {
+            var texto = generarTextoCarta();
+            copiarMensaje(texto);
+        }
+
+        function imprimirCarta() {
+            var texto = generarTextoCarta();
+            var ventana = window.open('', '_blank');
+            ventana.document.write('<html><head><title>Carta SST Convivienda 1</title>'
+                + '<style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.7;padding:40px;max-width:700px;margin:0 auto;white-space:pre-wrap;}</style></head>'
+                + '<body>' + texto.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</body></html>');
+            ventana.document.close();
+            ventana.focus();
+            ventana.print();
+        }
+
+        // --- TRACKING COTIZACIONES ---
+        var STEPS_COTIZ = ['carta','aprobacion','pedidos','anticipo','recepcion','instalacion','saldo','docs'];
+
+        function cargarTrackingCotizaciones() {
+            database.ref('edificios/' + EDIFICIO_ID + '/cotizaciones/2026').once('value').then(function(snap) {
+                if (!snap.exists()) return;
+                var data = snap.val();
+                var completados = 0;
+                STEPS_COTIZ.forEach(function(step) {
+                    if (data[step] && data[step].completado) {
+                        var li = document.getElementById('step_' + step);
+                        var cb = li ? li.querySelector('input[type="checkbox"]') : null;
+                        if (cb) cb.checked = true;
+                        if (li) li.classList.add('done');
+                        completados++;
+                        if (data[step].fecha) {
+                            var fi = document.getElementById('fecha_' + step);
+                            if (fi) fi.value = data[step].fecha;
+                        }
+                    }
+                });
+                actualizarProgressBar(completados);
+            });
+        }
+
+        function guardarStepCotiz(step, completado) {
+            var data = { completado: completado };
+            var fi = document.getElementById('fecha_' + step);
+            if (fi && fi.value) data.fecha = fi.value;
+            database.ref('edificios/' + EDIFICIO_ID + '/cotizaciones/2026/' + step).update(data).then(function() {
+                var li = document.getElementById('step_' + step);
+                if (li) {
+                    if (completado) li.classList.add('done');
+                    else li.classList.remove('done');
+                }
+                recalcularProgress();
+                mostrarToast(completado ? '✅ Paso marcado como completado' : 'Paso desmarcado');
+                // Actualizar flag completado global
+                recalcularCompletadoTotal();
+            }).catch(function() { mostrarToast('❌ Error al guardar', 'error'); });
+        }
+
+        function guardarFechaCotiz(step, fecha) {
+            database.ref('edificios/' + EDIFICIO_ID + '/cotizaciones/2026/' + step).update({ fecha: fecha });
+        }
+
+        function recalcularProgress() {
+            var completados = 0;
+            STEPS_COTIZ.forEach(function(step) {
+                var li = document.getElementById('step_' + step);
+                if (li && li.classList.contains('done')) completados++;
+            });
+            actualizarProgressBar(completados);
+        }
+
+        function actualizarProgressBar(completados) {
+            var pct = Math.round((completados / STEPS_COTIZ.length) * 100);
+            var fill = document.getElementById('cotizProgressBar');
+            var label = document.getElementById('cotizProgressLabel');
+            if (fill) fill.style.width = pct + '%';
+            if (label) label.textContent = pct + '% completado (' + completados + '/' + STEPS_COTIZ.length + ' pasos)';
+        }
+
+        function recalcularCompletadoTotal() {
+            var todos = STEPS_COTIZ.every(function(step) {
+                var li = document.getElementById('step_' + step);
+                return li && li.classList.contains('done');
+            });
+            database.ref('edificios/' + EDIFICIO_ID + '/cotizaciones/2026/completado').set(todos).then(function() {
+                actualizarBannerCotizaciones();
+            });
+        }
+
+        // Inicializar cotizaciones y comm al cargar la sección herramientas
+        // Se llama desde showPrivateSection cuando se navega a herramientas
     </script>
+
+    <!-- Modal Carta para Administradora -->
+    <div id="cartaModal" class="carta-modal">
+        <div class="carta-modal-inner">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <h3 style="color:var(--primary);font-size:1.15rem;">📄 Vista Previa — Carta para Administradora</h3>
+                <button onclick="document.getElementById('cartaModal').classList.remove('active')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-gray);">✕</button>
+            </div>
+            <div class="carta-preview-text" id="cartaPreviewContent">Completa los datos del formulario para generar la carta.</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+                <button class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem;" onclick="copiarCarta()">📋 Copiar</button>
+                <button class="btn btn-primary" style="padding:9px 16px;font-size:0.85rem;background:#f97316;" onclick="imprimirCarta()">🖨️ PDF/Imprimir</button>
+                <button class="btn btn-secondary" style="padding:9px 16px;font-size:0.85rem;" onclick="document.getElementById('cartaModal').classList.remove('active')">Cerrar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal subida Google Drive -->
     <div id="modalSubidaLink" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">

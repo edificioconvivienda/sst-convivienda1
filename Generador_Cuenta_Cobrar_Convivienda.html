@@ -7,6 +7,10 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+    <!-- PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -299,7 +303,7 @@
             <select id="edificio" onchange="cargarDatos()">
                 <option value="">-- Seleccione --</option>
                 <option value="nepal2">Edificio Nepal 2</option>
-                <option value="convivienda">Edificio Convivienda I</option>
+                <option value="convivienda" selected>Edificio Convivienda I</option>
             </select>
         </div>
         
@@ -336,6 +340,8 @@
         <div class="btn-container">
             <button class="btn" onclick="generarDocumento()">👁️ Ver Vista Previa</button>
             <button class="btn" onclick="imprimirCuenta()">🖨️ Imprimir PDF</button>
+            <button class="btn" id="btnGuardarCuenta" onclick="guardarCuentaNube()" style="background: linear-gradient(135deg, #2c5f7c, #3d7a96);">💾 Guardar y Subir a la Nube</button>
+            <button class="btn" id="btnEnviarCorreo" onclick="marcarParaEnvio()" style="background: linear-gradient(135deg, #27ae60, #2ecc71); display:none;">📧 Enviar por Correo</button>
         </div>
     </div>
     
@@ -430,6 +436,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const storage  = firebase.storage();
         const EDIFICIO_ID = 'convivienda-1';
         function cargarDatos() {
             const select = document.getElementById('edificio').value;
@@ -477,6 +484,102 @@
             document.getElementById('documento').scrollIntoView({ behavior: 'smooth' });
         }
 
+        async function guardarCuentaNube() {
+            const documento = document.getElementById('documento');
+            if (!documento || !documento.classList.contains('visible')) {
+                alert('⚠️ Primero genera la Vista Previa del documento con todos los datos.');
+                return;
+            }
+
+            const btn = document.getElementById('btnGuardarCuenta');
+            const textoOriginal = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Capturando documento...'; }
+
+            try {
+                const canvas = await html2canvas(documento, {
+                    scale: 2, useCORS: true, logging: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: documento.scrollWidth,
+                    windowHeight: documento.scrollHeight
+                });
+
+                if (btn) btn.innerHTML = '📄 Creando PDF...';
+
+                const { jsPDF } = window.jspdf;
+                const pdf    = new jsPDF('p', 'mm', 'letter');
+                const pageW  = pdf.internal.pageSize.getWidth();
+                const imgH   = (canvas.height * pageW) / canvas.width;
+                pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pageW, imgH);
+
+                const pdfBlob = pdf.output('blob');
+                const ahora   = new Date();
+                const clave   = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2,'0')}`;
+                const nombreArchivo = `cuenta-cobrar-convivienda-1-${clave}.pdf`;
+                const descripcion   = document.getElementById('descripcion').value;
+                const valor         = document.getElementById('valor').value;
+
+                if (btn) btn.innerHTML = '☁️ Subiendo a Firebase...';
+
+                const storageRef = storage.ref(`convivienda-1/cuentas/${clave}/${nombreArchivo}`);
+                await storageRef.put(pdfBlob, {
+                    contentType: 'application/pdf',
+                    customMetadata: { descripcion, valor, sistema: 'SG-SST Convivienda I' }
+                });
+
+                const downloadURL = await storageRef.getDownloadURL();
+
+                await database.ref(`edificios/convivienda-1/cuentas/${clave}`).set({
+                    generado:       true,
+                    fecha:          ahora.toISOString(),
+                    mes:            ahora.getMonth() + 1,
+                    año:            ahora.getFullYear(),
+                    link:           downloadURL,
+                    archivo:        nombreArchivo,
+                    descripcion,
+                    valor,
+                    pendienteEnvio: false,
+                    enviado:        false
+                });
+
+                const btnEnviar = document.getElementById('btnEnviarCorreo');
+                if (btnEnviar) {
+                    btnEnviar.style.display = 'inline-block';
+                    btnEnviar.dataset.clave = clave;
+                }
+
+                pdf.save(nombreArchivo);
+
+                if (btn) btn.innerHTML = '✅ ¡Guardada en la nube!';
+                setTimeout(() => {
+                    if (btn) { btn.disabled = false; btn.innerHTML = textoOriginal; }
+                }, 4000);
+
+                alert(`✅ Cuenta por Cobrar guardada exitosamente:\n\n📄 ${nombreArchivo}\n☁️ Firebase Storage\n\nTambién se descargó una copia en tu computador.`);
+
+            } catch (error) {
+                console.error('Error guardando cuenta:', error);
+                if (btn) { btn.disabled = false; btn.innerHTML = textoOriginal; }
+                alert('❌ Error al guardar: ' + error.message);
+            }
+        }
+
+        async function marcarParaEnvio() {
+            const btn   = document.getElementById('btnEnviarCorreo');
+            const clave = btn ? btn.dataset.clave : null;
+            if (!clave) { alert('Primero guarda la cuenta en la nube.'); return; }
+
+            btn.disabled  = true;
+            btn.innerHTML = '⏳ Marcando...';
+            try {
+                await database.ref(`edificios/convivienda-1/cuentas/${clave}`).update({ pendienteEnvio: true });
+                btn.innerHTML = '✅ ¡Listo! El correo se enviará en minutos.';
+            } catch(e) {
+                btn.disabled  = false;
+                btn.innerHTML = '📧 Enviar por Correo';
+                alert('Error: ' + e.message);
+            }
+        }
+
         function imprimirCuenta() {
             // Verificar que el documento esté generado
             if (!document.getElementById('documento').classList.contains('visible')) {
@@ -508,6 +611,9 @@
                 window.print();
             }
         }
+        window.addEventListener('DOMContentLoaded', function() {
+            cargarDatos();
+        });
     </script>
 </body>
 </html>

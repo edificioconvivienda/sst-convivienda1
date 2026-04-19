@@ -669,11 +669,11 @@
             }
         }
 
-        function agregarHallazgoNegativo() {
-            const textoInicial = document.getElementById('hallazgos-negativos-input').value.trim();
+        function agregarHallazgoNegativo(dataPrefill = null) {
+            const textoInicial = dataPrefill ? (dataPrefill.descripcion || '') : document.getElementById('hallazgos-negativos-input').value.trim();
 
             contadorHallazgosNegativos++;
-            const id = Date.now();
+            const id = dataPrefill ? (dataPrefill.id || Date.now()) : Date.now();
 
             const container = document.getElementById('hallazgos-negativos-lista');
             const item = document.createElement('div');
@@ -724,11 +724,23 @@
                     </div>
                 </div>
             `;
-            
+
             container.appendChild(item);
 
-            // Limpiar el campo de entrada
-            document.getElementById('hallazgos-negativos-input').value = '';
+            if (dataPrefill) {
+                const nivelEl = document.getElementById('nivel-' + id);
+                if (nivelEl && dataPrefill.nivel) nivelEl.value = dataPrefill.nivel;
+                const ubicEl = document.getElementById('ubicacion-' + id);
+                if (ubicEl && dataPrefill.ubicacion) ubicEl.value = dataPrefill.ubicacion;
+                const accionEl = document.getElementById('accion-' + id);
+                if (accionEl && dataPrefill.accion) accionEl.value = dataPrefill.accion;
+                const respEl = document.getElementById('responsable-' + id);
+                if (respEl && dataPrefill.responsable) respEl.value = dataPrefill.responsable;
+                const plazoEl = document.getElementById('plazo-' + id);
+                if (plazoEl && dataPrefill.plazo) plazoEl.value = dataPrefill.plazo;
+            } else {
+                document.getElementById('hallazgos-negativos-input').value = '';
+            }
 
             hallazgosNegativos.push({ id: id });
             actualizarResumen();
@@ -787,12 +799,6 @@
                     supervisiones.push(datos);
                     localStorage.setItem('supervisiones_convivienda1', JSON.stringify(supervisiones));
                 });
-            
-            alert('✅ Supervisión guardada exitosamente!\n\nPuedes verla en el Informe Consolidado.');
-            
-            if (confirm('¿Deseas ir al Generador de Informe Consolidado ahora?')) {
-                window.location.href = 'Generador_Informe_Consolidado_Mejorado.html';
-            }
         }
 
         function guardarBorrador() {
@@ -895,11 +901,14 @@
 
             // Restaurar hallazgos positivos y negativos
             if (data.hallazgosPositivos) hallazgosPositivos = data.hallazgosPositivos;
-            if (data.hallazgosNegativos) {
-                hallazgosNegativos = data.hallazgosNegativos;
-                contadorHallazgosNegativos = hallazgosNegativos.length;
-            }
             if (typeof renderizarHallazgosPositivos === 'function') renderizarHallazgosPositivos();
+
+            if (data.hallazgosNegativos && data.hallazgosNegativos.length) {
+                hallazgosNegativos = [];
+                contadorHallazgosNegativos = 0;
+                document.getElementById('hallazgos-negativos-lista').innerHTML = '';
+                data.hallazgosNegativos.forEach(h => agregarHallazgoNegativo(h));
+            }
 
             // Mostrar banner
             document.getElementById('bannerEdicionSupervision').style.display = 'block';
@@ -917,14 +926,22 @@
             const areas = Array.from(checkboxes).map(cb => cb.value);
             
             const hallazgosNeg = hallazgosNegativos.map(h => {
+                const nivelEl = document.getElementById('nivel-' + h.id);
+                const descEl = document.getElementById('desc-' + h.id);
+                const ubicEl = document.getElementById('ubicacion-' + h.id);
+                const fotoEl = document.getElementById('foto-' + h.id);
+                const accionEl = document.getElementById('accion-' + h.id);
+                const respEl = document.getElementById('responsable-' + h.id);
+                const plazoEl = document.getElementById('plazo-' + h.id);
                 return {
-                    nivel: document.getElementById('nivel-' + h.id).value,
-                    descripcion: document.getElementById('desc-' + h.id).value,
-                    ubicacion: document.getElementById('ubicacion-' + h.id).value,
-                    foto: document.getElementById('foto-' + h.id).value,
-                    accion: document.getElementById('accion-' + h.id).value,
-                    responsable: document.getElementById('responsable-' + h.id).value,
-                    plazo: document.getElementById('plazo-' + h.id).value
+                    id: h.id,
+                    nivel: nivelEl ? nivelEl.value : (h.nivel || 'medio'),
+                    descripcion: descEl ? descEl.value : (h.descripcion || ''),
+                    ubicacion: ubicEl ? ubicEl.value : (h.ubicacion || ''),
+                    foto: fotoEl ? fotoEl.value : (h.foto || ''),
+                    accion: accionEl ? accionEl.value : (h.accion || ''),
+                    responsable: respEl ? respEl.value : (h.responsable || ''),
+                    plazo: plazoEl ? plazoEl.value : (h.plazo || '')
                 };
             });
 

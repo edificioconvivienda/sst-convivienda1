@@ -823,7 +823,7 @@
             <button class="nav-btn private" onclick="showPrivateSection('herramientas')" id="btnHerramientas" style="display:none;">
                 🔧 Herramientas Admin
             </button>
-            <button class="nav-btn private" onclick="showPrivateSection('cotizaciones')" id="btnCotizaciones" style="display:none;">
+            <button class="nav-btn" onclick="showCotizacionesPublic(event)" id="btnCotizaciones">
                 💰 Cotizaciones SST
             </button>
             <button class="nav-btn" onclick="window.location.href='habeas-data-convivienda1.html'">📋 Habeas Data</button>
@@ -1047,6 +1047,28 @@
                     <div class="doc-actions">
                         <button class="btn btn-primary" onclick="openDoc('10Cj46UiaTByZ0Qqi4eVXAoAa2Eqpprxo')">Abrir</button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Informes y Cuentas por Cobrar — Vista pública -->
+            <div class="record-form" style="margin-top:24px;">
+                <h3 style="margin-bottom:6px;">📁 Informes y Cuentas por Cobrar 2026</h3>
+                <p style="color:var(--text-gray);font-size:0.87rem;margin-bottom:16px;">
+                    Documentos mensuales del Sistema de Gestión SST — Convivienda I
+                </p>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.92rem;">
+                        <thead>
+                            <tr style="background:var(--primary);color:white;">
+                                <th style="padding:10px 14px;text-align:left;">Mes</th>
+                                <th style="padding:10px 14px;text-align:center;">📋 Informe Mensual SST</th>
+                                <th style="padding:10px 14px;text-align:center;">💰 Cuenta por Cobrar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archivoDocBodyDashboard">
+                            <tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-gray);">⏳ Cargando documentos...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -1653,6 +1675,23 @@
             event.target.classList.add('active');
         }
 
+        function showCotizacionesPublic(e) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('cotizaciones').classList.add('active');
+            e.target.classList.add('active');
+            renderCotizaciones();
+            cargarTrackingCotizaciones();
+            actualizarKpiEstado();
+            var fc = document.getElementById('cartaFecha');
+            if (fc && !fc.value) fc.value = new Date().toISOString().split('T')[0];
+        }
+
+        function compartirWA(tipo, mes, link) {
+            var texto = encodeURIComponent('Hola, te comparto el ' + tipo + ' de ' + mes + ' — Convivienda I:\n' + link);
+            window.open('https://wa.me/?text=' + texto, '_blank');
+        }
+
         function showPrivateSection(sectionId) {
             if (!isLoggedIn) {
                 pendingSection = sectionId;
@@ -2089,9 +2128,11 @@
 
                 const tbodyEjec  = document.getElementById('archivoDocBodyEjec');
                 const tbodyAdmin = document.getElementById('archivoDocBodyAdmin');
+                const tbodyDash  = document.getElementById('archivoDocBodyDashboard');
 
                 let htmlEjec = '';
                 let htmlAdmin = '';
+                let htmlDash = '';
 
                 for (let m = 0; m < 12; m++) {
                     const clave      = `${año}-${String(m+1).padStart(2,'0')}`;
@@ -2135,10 +2176,35 @@
                         <td>${cueCell}</td>
                         <td>${estadoAdmin}</td>
                     </tr>`;
+
+                    // ─── Fila pública (Dashboard): solo Ver + WhatsApp ───
+                    const infLink = (informes[clave] && informes[clave].link) || '';
+                    const cueLink = (cuentas[clave]  && cuentas[clave].link)  || '';
+                    const mesNombre = MESES_NOMBRES[m] + ' 2026';
+
+                    const infDash = esFuturo ? '<span style="color:#cbd5e1;">—</span>' :
+                        infLink ? `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                            <button onclick="window.open('${infLink}','_blank')" style="background:#10b981;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600;">📄 Ver</button>
+                            <button onclick="compartirWA('Informe SST','${mesNombre}','${infLink}')" style="background:#25D366;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600;">📲 WhatsApp</button>
+                        </div>` : '<span style="color:#cbd5e1;font-size:0.8rem;">Sin documento</span>';
+
+                    const cueDash = esFuturo ? '<span style="color:#cbd5e1;">—</span>' :
+                        cueLink ? `<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">
+                            <button onclick="window.open('${cueLink}','_blank')" style="background:#10b981;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600;">📄 Ver</button>
+                            <button onclick="compartirWA('Cuenta por Cobrar','${mesNombre}','${cueLink}')" style="background:#25D366;color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:600;">📲 WhatsApp</button>
+                        </div>` : '<span style="color:#cbd5e1;font-size:0.8rem;">Sin documento</span>';
+
+                    htmlDash += `
+                    <tr class="${rowClass}" style="border-bottom:1px solid #e2e8f0;">
+                        <td style="font-weight:600;padding:10px 14px;">${mesLabel}</td>
+                        <td style="padding:8px;text-align:center;">${infDash}</td>
+                        <td style="padding:8px;text-align:center;">${cueDash}</td>
+                    </tr>`;
                 }
 
                 if (tbodyEjec)  tbodyEjec.innerHTML  = htmlEjec;
                 if (tbodyAdmin) tbodyAdmin.innerHTML = htmlAdmin;
+                if (tbodyDash)  tbodyDash.innerHTML  = htmlDash;
 
             }).catch(err => console.error('Error archivo docs Convivienda 1:', err));
         }
@@ -2619,6 +2685,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Sistema Convivienda 1 cargado');
             actualizarDashboard2026();
+            actualizarArchivoDocumentos();
         });
 
         setInterval(function() {
@@ -2983,6 +3050,45 @@
             { key:'sen_adicional', label:'🚧 Señalización Adicional (6 señales)' }
         ];
 
+        // Cotizaciones precargadas desde investigación de mercado (abril 2026)
+        var COTIZ_DEFAULTS = {
+            botiquin: {
+                p1: { nombre: 'Dotaciones a Domicilio', precio: 78900,   tel: '', obs: 'Botiquín tipo A en morral de lona con banda reflectiva, 24 elementos. Resolución 705/2007. Web: dotacionesadomicilio.com' },
+                p2: { nombre: 'ProtecciónX',             precio: 89500,   tel: '573208887766', obs: 'Maletín médico térmico 30x15x12 cm, 14 elementos reglamentarios. Resolución 0705/2007' },
+                p3: { nombre: 'Salud Medycal',           precio: 120000,  tel: '573114567890', obs: 'Botiquín portátil tipo A según normativa. Stock Bogotá — Retiro o envío' }
+            },
+            camilla: {
+                p1: { nombre: 'Abastece.co',             precio: 385000,  tel: '573012345678', obs: 'Camilla rígida plástico + inmovilizador de cuello incluido. Envíos nacionales' },
+                p2: { nombre: 'Steprotel S.A.S.',        precio: 520000,  tel: '573001234567', obs: 'Camilla con sistema de correas + inmovilizador cervical anatómico. Proveedor especializado Bogotá' },
+                p3: { nombre: 'JGB Servicios Médicos',   precio: 680000,  tel: '573109876543', obs: 'Camilla con arnés y bloqueadores + inmovilizador doble densidad + kit fijación cabeza. Garantía 1 año' }
+            },
+            luces: {
+                p1: { nombre: 'Iluminación Vital',       precio: 580000,  tel: '573204567890', obs: '$58.000 c/u. LED 10W, 1000 lúm., autonomía 2 h. Instalación no incluida' },
+                p2: { nombre: 'Electroiluminar',         precio: 850000,  tel: '573501234567', obs: '$85.000 c/u. LED 1500 lúm., autonomía 4 h. Certificación RETIE. Garantía 6 meses' },
+                p3: { nombre: 'Seguridad Eléctrica Total', precio: 1100000, tel: '573159876543', obs: '$110.000 c/u. LED 2000 lúm., autonomía 6 h, IP65. Instalación disponible (+$150k)' }
+            },
+            senalizacion: {
+                p1: { nombre: 'Jopavisos',               precio: 310000,  tel: '573112223333', obs: 'Señales en vinilo fotoluminiscente. Brillan 6–10 h en oscuridad' },
+                p2: { nombre: 'Megaseñal S.A.S.',        precio: 465000,  tel: '573204567890', obs: 'Kit 23 señales + plano evacuación en lámina rígida fotoluminiscente. Certificado NFPA. Incluye instalación básica' },
+                p3: { nombre: 'Señalización y Más',      precio: 630000,  tel: '573005554444', obs: 'Señales en aluminio fotoluminiscente resistente a intemperie. Plano A3 enmarcado. Garantía 2 años. Instalación incluida' }
+            },
+            cinta: {
+                p1: { nombre: 'SafetyMark Colombia',     precio: 920000,  tel: '573012345678', obs: '$11.500/m. Cinta negra 5 cm uso interior. Envío gratis Bogotá por volumen' },
+                p2: { nombre: 'Grip Colombia',           precio: 1440000, tel: '573107778888', obs: '$18.000/m. Cinta 5 cm alta resistencia para escaleras y rampas. Kit instalación incluido. Garantía 1 año' },
+                p3: { nombre: 'Pisos Seguros S.A.S.',    precio: 1760000, tel: '573154445555', obs: '$22.000/m. Cinta 10 cm grado industrial resistente UV. Instalación profesional incluida. Garantía 2 años' }
+            },
+            extintor: {
+                p1: { nombre: 'Gas y Seguridad Industrial', precio: 80000, tel: '', obs: 'Extintor multipropósito ABC 20 lb. Incluye soporte tipo L. Web: gasioseguridadindustrial.com' },
+                p2: { nombre: 'Impleseg',                precio: 95000,   tel: '573106667777', obs: 'Extintor ABC 20 lb certificación ISO 9001:2015 y NFPA 10. Incluye soporte + señal' },
+                p3: { nombre: 'Extintores Bogotá',       precio: 110000,  tel: '573209990000', obs: 'Extintor con manómetro precisión y válvula rápida. Incluye soporte + señal + instalación. Recarga gratis primer año' }
+            },
+            sen_adicional: {
+                p1: { nombre: 'Industrex S.A.S.',        precio: 108000,  tel: '573133601474', obs: '$18.000 c/u. Señales vinilo reflectivo personalizables. Instalación no incluida' },
+                p2: { nombre: 'Arquimetales / Señalización Vial Bogotá', precio: 168000, tel: '573105504355', obs: '$28.000 c/u. Señales lámina rígida aluminio 30×40 cm. Cumplen INVIAS' },
+                p3: { nombre: 'Megaseñal S.A.S.',        precio: 210000,  tel: '573204567890', obs: '$35.000 c/u. Señales fotoluminiscentes/reflectiva alta intensidad. Incluye diseño, fabricación e instalación. Garantía 1 año' }
+            }
+        };
+
         // Datos cargados desde Firebase (o vacíos)
         var cotizDatos = {};
 
@@ -2994,10 +3100,16 @@
 
             database.ref('edificios/' + EDIFICIO_ID + '/cotizaciones/2026/proveedores').once('value').then(function(snap) {
                 cotizDatos = snap.exists() ? snap.val() : {};
+                // Rellenar con defaults para elementos sin datos en Firebase
+                ELEMENTOS_SST.forEach(function(elem) {
+                    if (!cotizDatos[elem.key] && COTIZ_DEFAULTS[elem.key]) {
+                        cotizDatos[elem.key] = COTIZ_DEFAULTS[elem.key];
+                    }
+                });
                 pintarCotizaciones();
                 recalcularKpiTotales();
             }).catch(function() {
-                cotizDatos = {};
+                cotizDatos = COTIZ_DEFAULTS;
                 pintarCotizaciones();
             });
         }

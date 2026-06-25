@@ -763,7 +763,18 @@ async function guardarEnFirebase() {
 
   console.log("[Firebase] Guardando informe:", informeId);
   await db.ref(`edificios/${EDIFICIO_ID}/informes/${informeId}`).set(datos);
-  console.log("[Firebase] Informe guardado OK:", informeId);
+
+  // También guarda/actualiza la clave YYYY-MM para que el Dashboard y Grilla PAT lo detecten
+  const mesKey = `${anio}-${String(mes + 1).padStart(2, '0')}`;
+  await db.ref(`edificios/${EDIFICIO_ID}/informes/${mesKey}`).update({
+    generado: true,
+    refId:    informeId,
+    mes:      mes + 1,
+    año:      anio,
+    fecha:    new Date().toISOString()
+  });
+
+  console.log("[Firebase] Informe guardado OK:", informeId, "→ clave:", mesKey);
   return informeId;
 }
 

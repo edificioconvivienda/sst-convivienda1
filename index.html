@@ -1976,7 +1976,9 @@
             let html = '';
             for (let m = 0; m < 12; m++) {
                 const clave = `${añoActualGrilla}-${String(m+1).padStart(2,'0')}`;
-                const infTiene = informes[clave] && (informes[clave].link || informes[clave].generado);
+                // Busca por clave YYYY-MM (manual/generador nuevo) O por campos mesNumero/anio (generador viejo con timestamp)
+                const infTiene = (informes[clave] && (informes[clave].link || informes[clave].generado))
+                    || Object.values(informes).some(v => v && typeof v === 'object' && v.anio == añoActualGrilla && v.mesNumero == m && v.estado === 'Generado');
                 const cueTiene = cuentas[clave]  && (cuentas[clave].link  || cuentas[clave].generado);
                 const esFuturo = (añoActualGrilla > añoActualReal) ||
                                  (añoActualGrilla === añoActualReal && m > mesActualReal);
@@ -2092,10 +2094,11 @@
             const iconAdd = tipo === 'informe' ? '🔗 Agregar informe' : '🔗 Agregar cuenta';
             if (esFuturo) return `<span style="color:#cbd5e1;font-size:0.8rem;">—</span>`;
             // Detectar si el Generador guardó datos para este mes
-            const genKey = tipo === 'informe' ? 'informe' : 'cuenta';
-            const hayGenerado = informesGenerados && Object.keys(informesGenerados).some(k =>
-                k.startsWith(`${genKey}-`) && k.includes(clave.replace('-',''))
-            );
+            const [claveAño, claveMesStr] = clave.split('-');
+            const claveMes = parseInt(claveMesStr) - 1; // 0-based
+            const hayGenerado = tipo === 'informe'
+                ? Object.values(informesGenerados || {}).some(v => v && v.anio == claveAño && v.mesNumero == claveMes)
+                : false;
             let html = '<div class="arch-cell">';
             if (link) {
                 html += `<button class="btn-arch-open" onclick="window.open('${link.replace(/'/g,"\\'")}','_blank')">${iconBtn}</button>`;

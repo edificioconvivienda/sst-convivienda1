@@ -1150,20 +1150,6 @@
 
             <!-- Herramientas operacionales -->
             <div class="tools-grid">
-                <div class="tool-card" onclick="openTool('supervision')" style="border-left:4px solid #10b981;">
-                    <div class="tool-header">
-                        <div class="tool-icon">📋</div>
-                        <div class="tool-info">
-                            <h3>Supervisión Mensual</h3>
-                            <p>Inspecciones con fotografías y registro automático</p>
-                        </div>
-                    </div>
-                    <div class="tool-status">
-                        <span class="frequency">📅 Mensual</span>
-                        <span class="status-badge pending" id="badgeSupervision">Pendiente</span>
-                    </div>
-                </div>
-
                 <div class="tool-card" onclick="openTool('formularios')">
                     <div class="tool-header">
                         <div class="tool-icon">🎓</div>
@@ -1259,9 +1245,6 @@
                     <button class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem;" onclick="openGenerador('informe')">
                         📊 Generar Nuevo Informe
                     </button>
-                    <button class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem;" onclick="openGenerador('cuenta')">
-                        💰 Generar Nueva Cuenta
-                    </button>
                 </div>
             </div>
         </section>
@@ -1300,9 +1283,6 @@
                     <button class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem;" onclick="openGenerador('informe')">
                         📊 Generar Nuevo Informe
                     </button>
-                    <button class="btn btn-primary" style="padding:9px 18px;font-size:0.85rem;" onclick="openGenerador('cuenta')">
-                        💰 Generar Nueva Cuenta
-                    </button>
                 </div>
                 <!-- Indicadores ocultos (compatibilidad) -->
                 <div id="adminInformesStatus" style="display:none;"></div>
@@ -1322,20 +1302,6 @@
                     <div class="tool-status">
                         <span class="frequency">📅 Mensual</span>
                         <span class="status-badge pending">Generar informe</span>
-                    </div>
-                </div>
-
-                <div class="tool-card" onclick="openGenerador('cuenta')">
-                    <div class="tool-header">
-                        <div class="tool-icon">💰</div>
-                        <div class="tool-info">
-                            <h3>Generador de Cuenta por Cobrar</h3>
-                            <p>Genera cuenta en formato carta</p>
-                        </div>
-                    </div>
-                    <div class="tool-status">
-                        <span class="frequency">📅 Mensual</span>
-                        <span class="status-badge completed">Listo para usar</span>
                     </div>
                 </div>
 
@@ -1367,19 +1333,6 @@
                     </div>
                 </div>
 
-                <div class="tool-card" onclick="openTool('supervision')">
-                    <div class="tool-header">
-                        <div class="tool-icon">📋</div>
-                        <div class="tool-info">
-                            <h3>Módulo de Supervisión Mensual</h3>
-                            <p>Checklist, fotos y seguimiento</p>
-                        </div>
-                    </div>
-                    <div class="tool-status">
-                        <span class="frequency">📅 Mensual</span>
-                        <span class="status-badge completed">Disponible</span>
-                    </div>
-                </div>
             </div>
 
             <!-- ═══════════════════════════════════════════════════════

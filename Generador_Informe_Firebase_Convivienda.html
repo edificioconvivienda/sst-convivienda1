@@ -659,7 +659,7 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
     //  4. CONCLUSIONES
     // ════════════════════
     const cumpTexto = cumpTotal !== null ? `${cumpTotal}%` : "en evaluación";
-    const conclusiones = `• Cumplimiento del período: ${cumpTexto}, con ${totalActs} actividad(es) ejecutada(s) conforme al Plan Anual SST ${anio}.\n\n• ${analInsp.itemsFallidos.length > 0 ? `Persisten ${analInsp.itemsFallidos.length} no conformidad(es) pendientes de cierre (ver Hallazgos).` : "No se identificaron no conformidades pendientes de cierre."} No se reportaron accidentes de trabajo ni enfermedades laborales en el período.`;
+    const conclusiones = `El Sistema de Gestión de Seguridad y Salud en el Trabajo (SG-SST) registró un cumplimiento de ${cumpTexto} durante ${mesNom} de ${anio}, con la ejecución de ${totalActs} actividad(es) conforme al Plan Anual SST ${anio}. ${analInsp.itemsFallidos.length > 0 ? `Se identificaron ${analInsp.itemsFallidos.length} no conformidad(es) pendiente(s) de cierre, detalladas en la sección de Hallazgos, sobre las cuales se recomienda dar seguimiento.` : "Las inspecciones y supervisiones realizadas no evidenciaron condiciones de riesgo que requieran intervención inmediata."} No se reportaron accidentes de trabajo ni enfermedades laborales durante el período evaluado.`;
     document.getElementById("txtConclusiones").value = conclusiones;
 
     // ════════════════════
@@ -667,19 +667,17 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
     // ════════════════════
     let recomendaciones = "";
     if (analInsp.itemsFallidos.length > 0) {
-      recomendaciones += `• Cerrar las no conformidades de ${mesNom}: ${analInsp.itemsFallidos.map(i=>i.label).join("; ")}. Asignar responsable y fecha límite.\n\n`;
+      recomendaciones += `Se recomienda priorizar el cierre de las no conformidades identificadas en las inspecciones de ${mesNom}: ${analInsp.itemsFallidos.map(i=>i.label).join("; ")}, asignando responsable y fecha límite de ejecución.\n\n`;
     }
     if (analInsp.nivelMaximo === "Crítico" || analInsp.nivelMaximo === "Alto") {
-      recomendaciones += `• Atender con carácter urgente los hallazgos de nivel "${analInsp.nivelMaximo}" identificados en el período.\n\n`;
+      recomendaciones += `Los hallazgos de nivel "${analInsp.nivelMaximo}" identificados en el período requieren atención prioritaria, dado el riesgo que representan para la seguridad de trabajadores y residentes.\n\n`;
     }
     if (analInsp.acciones.length > 0) {
-      recomendaciones += `• Verificar el cumplimiento de las acciones correctivas propuestas: ${analInsp.acciones.slice(0,2).join(". ")}.\n\n`;
+      recomendaciones += `Se debe verificar el cumplimiento de las siguientes acciones correctivas: ${analInsp.acciones.slice(0,2).join("; ")}.\n\n`;
     }
-    if (!recomendaciones) {
-      recomendaciones = `• Mantener la periodicidad de inspecciones y capacitaciones establecida en el Plan Anual SST ${anio}.`;
-    } else {
-      recomendaciones += `• Mantener la periodicidad de inspecciones y capacitaciones establecida en el Plan Anual SST ${anio}.`;
-    }
+    recomendaciones += !recomendaciones
+      ? `Se recomienda mantener la periodicidad de las actividades de supervisión, inspección y capacitación establecida en el Plan Anual SST ${anio}, garantizando el registro oportuno de la información en el sistema.`
+      : `Adicionalmente, se recomienda mantener la periodicidad de las actividades establecida en el Plan Anual SST ${anio}.`;
     document.getElementById("txtRecomendaciones").value = recomendaciones;
 
     setStatus(`✅ Textos generados para <strong>${mesNom} ${anio}</strong> — ${totalActs} actividades encontradas, ${insMes.length} inspección(es) analizada(s), ${analInsp.hallazgosTextos.length} hallazgo(s) identificado(s). Puede editar los textos antes de generar el PDF.`, "success");

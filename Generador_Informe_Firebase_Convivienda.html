@@ -586,67 +586,43 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
     // ════════════════════
     //  2. ANÁLISIS
     // ════════════════════
-    let analisis = `ANÁLISIS DE ACTIVIDADES — ${mesNom.toUpperCase()} ${anio}\n\n`;
+    let analisis = "";
 
-    analisis += `1. SUPERVISIONES DE SEGURIDAD (${supMes.length} realizadas)\n`;
+    // Supervisiones — síntesis, el detalle fila a fila ya está en la tabla 3.1 del PDF
     if (supMes.length > 0) {
-      supMes.forEach((s, i) => {
-        const areas  = Array.isArray(s.areas) ? s.areas.join(", ") : (s.areas || "áreas generales");
-        const hallPos = Array.isArray(s.hallazgosPositivos) ? s.hallazgosPositivos.map(h=>h.texto||h).join("; ") : "";
-        const hallNeg = Array.isArray(s.hallazgosNegativos) ? s.hallazgosNegativos.map(h=>h.descripcion||h.texto||h).join("; ") : "";
-        analisis += `  ${i+1}. Supervisión del ${fmtFecha(s)} — Áreas revisadas: ${areas}.\n`;
-        if (hallPos) analisis += `     Aspectos positivos: ${hallPos}.\n`;
-        if (hallNeg) analisis += `     Hallazgos de mejora: ${hallNeg}.\n`;
-        analisis += "\n";
-      });
-    } else analisis += `  No se registraron supervisiones en este período.\n\n`;
+      const areasSet = new Set();
+      supMes.forEach(s => (Array.isArray(s.areas) ? s.areas : [s.areas || "áreas generales"]).forEach(a => areasSet.add(a)));
+      const totalHallNeg = supMes.reduce((acc, s) => acc + (Array.isArray(s.hallazgosNegativos) ? s.hallazgosNegativos.length : (s.hallazgosNegativos ? 1 : 0)), 0);
+      analisis += `SUPERVISIONES DE SEGURIDAD: ${supMes.length} supervisión(es), cubriendo ${[...areasSet].join(", ")}. `;
+      analisis += totalHallNeg > 0
+        ? `Se registraron ${totalHallNeg} observación(es) de mejora (detalle en tabla 3.1).\n\n`
+        : `No se identificaron condiciones de riesgo durante estas visitas.\n\n`;
+    } else {
+      analisis += `SUPERVISIONES DE SEGURIDAD: no se registraron supervisiones en este período.\n\n`;
+    }
 
-    analisis += `2. INSPECCIONES DE INSTALACIONES (${insMes.length} realizadas)\n`;
+    // Inspecciones — síntesis, el checklist completo ya está en la tabla 3.2.1 del PDF
     if (insMes.length > 0) {
-      insMes.forEach((ins, i) => {
-        const tipoLabel = ins.tipoInspeccion === "mensual" ? "Locativa Mensual"
-          : ins.tipoInspeccion === "trimestral" ? "Equipos Contra Incendio (Trimestral)"
-          : ins.tipoInspeccion === "especial" ? "Especial" : ins.tipoInspeccion || "General";
-        analisis += `  ${i+1}. Inspección ${tipoLabel} — ${fmtFecha(ins)}\n`;
-        analisis += `     Cumplimiento checklist: ${ins.cumplimiento || "N/R"}%\n`;
-        analisis += `     Nivel de riesgo: ${ins.nivelRiesgo || "Sin hallazgos"}\n`;
-        analisis += `     Estado: ${ins.estado || "N/R"}\n`;
-        if (ins.checklist_locativa) {
-          const ok  = Object.entries(ins.checklist_locativa).filter(([,v])=>v===true).map(([k])=>CHECKLIST_LOCATIVA[k]||k);
-          const nok = Object.entries(ins.checklist_locativa).filter(([,v])=>v!==true).map(([k])=>CHECKLIST_LOCATIVA[k]||k);
-          if (ok.length)  analisis += `     ✅ Conforme: ${ok.join(", ")}.\n`;
-          if (nok.length) analisis += `     ❌ No conforme: ${nok.join(", ")}.\n`;
-        }
-        if (ins.checklist_equipos) {
-          const ok  = Object.entries(ins.checklist_equipos).filter(([,v])=>v===true).map(([k])=>CHECKLIST_EQUIPOS[k]||k);
-          const nok = Object.entries(ins.checklist_equipos).filter(([,v])=>v!==true).map(([k])=>CHECKLIST_EQUIPOS[k]||k);
-          if (ok.length)  analisis += `     ✅ Equipos conformes: ${ok.join(", ")}.\n`;
-          if (nok.length) analisis += `     ❌ Equipos no conformes: ${nok.join(", ")}.\n`;
-        }
-        if (ins.hallazgos && ins.hallazgos !== "Sin hallazgos")
-          analisis += `     Hallazgos: ${ins.hallazgos}\n`;
-        if (ins.accionesCorrectivas)
-          analisis += `     Acciones correctivas: ${ins.accionesCorrectivas}\n`;
-        analisis += "\n";
-      });
-    } else analisis += `  No se registraron inspecciones en este período.\n\n`;
+      analisis += `INSPECCIONES DE INSTALACIONES: ${insMes.length} inspección(es) realizada(s) (${analInsp.locativas.length} locativa(s), ${analInsp.equipos.length} de equipos contra incendio). `;
+      analisis += analInsp.itemsFallidos.length > 0
+        ? `Se identificaron ${analInsp.itemsFallidos.length} ítem(s) no conforme(s) (detalle en tabla 3.2.1 y en Hallazgos).\n\n`
+        : `Todos los ítems evaluados resultaron conformes (detalle en tabla 3.2.1).\n\n`;
+    } else {
+      analisis += `INSPECCIONES DE INSTALACIONES: no se registraron inspecciones en este período.\n\n`;
+    }
 
-    analisis += `3. CAPACITACIONES E INDUCCIONES (${indMes.length} realizadas)\n`;
+    // Capacitaciones
     if (indMes.length > 0) {
-      indMes.forEach((s, i) => {
-        const tema  = s.tema || s.temaCapacitacion || s.titulo || "Tema SST";
-        const asist = s.asistentes || s.numeroAsistentes || s.participantes || "N/R";
-        analisis += `  ${i+1}. ${fmtFecha(s)} — Tema: "${tema}". Asistentes: ${asist}.\n`;
-      });
-    } else analisis += `  No se registraron capacitaciones en este período.\n`;
+      const temas = indMes.map(s => s.tema || s.temaCapacitacion || s.titulo || "Tema SST");
+      analisis += `CAPACITACIONES E INDUCCIONES: ${indMes.length} actividad(es) de formación — ${temas.join("; ")}.\n\n`;
+    } else {
+      analisis += `CAPACITACIONES E INDUCCIONES: no se registraron capacitaciones en este período.\n\n`;
+    }
 
-    analisis += `\n4. MANTENIMIENTOS (${mantMes.length} realizados)\n`;
-    if (mantMes.length > 0) {
-      mantMes.forEach((s, i) => {
-        const desc = s.descripcion || s.actividad || s.tipo || "Mantenimiento general";
-        analisis += `  ${i+1}. ${fmtFecha(s)}: ${desc}.\n`;
-      });
-    } else analisis += `  No se registraron mantenimientos en este período.\n`;
+    // Mantenimientos
+    analisis += mantMes.length > 0
+      ? `MANTENIMIENTOS: ${mantMes.length} actividad(es) ejecutada(s) (detalle en tabla 3.4).`
+      : `MANTENIMIENTOS: no se registraron mantenimientos en este período.`;
 
     document.getElementById("txtAnalisis").value = analisis;
 
@@ -655,36 +631,27 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
     // ════════════════════
     let hallazgos = "";
     if (insMes.length === 0) {
-      hallazgos = `Durante el mes de ${mesNom} de ${anio} no se registraron inspecciones formales en el sistema. Se recomienda verificar que los registros de inspección del período hayan sido cargados correctamente en el módulo correspondiente del SG-SST.`;
+      hallazgos = `No se registraron inspecciones formales durante ${mesNom} de ${anio}. Se recomienda confirmar el cargue oportuno de los registros en el sistema.`;
     } else if (analInsp.hallazgosTextos.length === 0 && analInsp.itemsFallidos.length === 0) {
-      hallazgos = `Durante el mes de ${mesNom} de ${anio}, las inspecciones realizadas reportaron un estado CONFORME en todos los ítems evaluados. No se identificaron hallazgos negativos, condiciones inseguras ni incumplimientos en las áreas inspeccionadas del edificio Convivienda I.\n\n`;
-      hallazgos += `ASPECTOS POSITIVOS IDENTIFICADOS:\n`;
-      if (analInsp.itemsOK.length > 0) {
-        analInsp.itemsOK.forEach(it => { hallazgos += `• ${it.label}: Conforme.\n`; });
-      } else {
-        hallazgos += `• Todas las áreas y equipos inspeccionados se encuentran en condiciones óptimas de seguridad.\n`;
-      }
-      hallazgos += `\nNo se reportaron accidentes de trabajo, incidentes ni enfermedades laborales durante el período evaluado, lo que refleja la efectividad de las medidas preventivas implementadas en el SG-SST de la Propiedad Horizontal Convivienda I.`;
+      hallazgos = `Las inspecciones de ${mesNom} de ${anio} reportaron estado conforme en todos los ítems evaluados, sin condiciones inseguras ni incumplimientos. No se presentaron accidentes de trabajo ni enfermedades laborales en el período.`;
     } else {
-      const nivelMax = analInsp.nivelMaximo;
-      hallazgos = `Durante el mes de ${mesNom} de ${anio}, las inspecciones de instalaciones identificaron ${analInsp.hallazgosTextos.length > 0 ? "los siguientes hallazgos" : "condiciones de mejora"} con nivel de riesgo máximo: ${nivelMax}.\n\n`;
+      hallazgos = `Nivel de riesgo máximo detectado en el período: ${analInsp.nivelMaximo}.\n\n`;
       if (analInsp.hallazgosTextos.length > 0) {
-        hallazgos += `HALLAZGOS IDENTIFICADOS:\n`;
+        hallazgos += `HALLAZGOS:\n`;
         analInsp.hallazgosTextos.forEach((h, i) => {
-          hallazgos += `\n${i+1}. [${h.tipo === "mensual" ? "Inspección Locativa" : h.tipo === "trimestral" ? "Equipos Contra Incendio" : "Inspección Especial"} — ${h.fecha}]\n`;
-          hallazgos += `   Nivel de riesgo: ${h.nivel}\n`;
-          hallazgos += `   Descripción: ${h.texto}\n`;
+          hallazgos += `${i+1}. [${h.fecha} — ${h.tipo === "mensual" ? "Locativa" : h.tipo === "trimestral" ? "Equipos CI" : "Especial"}, riesgo ${h.nivel}] ${h.texto}\n`;
         });
+        hallazgos += `\n`;
       }
       if (analInsp.itemsFallidos.length > 0) {
-        hallazgos += `\nÍTEMS DE CHECKLIST NO CONFORMES:\n`;
-        analInsp.itemsFallidos.forEach(it => { hallazgos += `• ❌ ${it.label}\n`; });
+        hallazgos += `Ítems no conformes: ${analInsp.itemsFallidos.map(i=>i.label).join("; ")}.\n\n`;
       }
       if (analInsp.acciones.length > 0) {
-        hallazgos += `\nACCIONES CORRECTIVAS PROPUESTAS:\n`;
+        hallazgos += `ACCIONES CORRECTIVAS PROPUESTAS:\n`;
         analInsp.acciones.forEach((ac, i) => { hallazgos += `${i+1}. ${ac}\n`; });
+        hallazgos += `\n`;
       }
-      hallazgos += `\nNo se reportaron accidentes de trabajo ni enfermedades laborales durante el período. Se establece seguimiento a los hallazgos identificados para garantizar el cierre oportuno de las acciones correctivas.`;
+      hallazgos += `No se reportaron accidentes de trabajo ni enfermedades laborales durante el período. Se dará seguimiento a los hallazgos hasta su cierre.`;
     }
     document.getElementById("txtHallazgos").value = hallazgos;
 
@@ -692,26 +659,27 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
     //  4. CONCLUSIONES
     // ════════════════════
     const cumpTexto = cumpTotal !== null ? `${cumpTotal}%` : "en evaluación";
-    const conclusiones = `Con base en las actividades desarrolladas durante el mes de ${mesNom} de ${anio}, se presentan las siguientes conclusiones:\n\n• El SG-SST de la Propiedad Horizontal Convivienda I registró un cumplimiento de ${cumpTexto} en el período, con un total de ${totalActs} actividades ejecutadas conforme al Plan Anual SST 2026.\n\n• Las ${insMes.length} inspección(es) de instalaciones realizadas permitieron verificar las condiciones de seguridad del edificio. ${analInsp.itemsFallidos.length > 0 ? `Se identificaron ${analInsp.itemsFallidos.length} ítem(s) no conforme(s) que requieren acciones correctivas: ${analInsp.itemsFallidos.map(i=>i.label).join(", ")}.` : "Todos los ítems del checklist se encontraron conformes."}\n\n• Las ${supMes.length} supervisión(es) de seguridad ejecutadas contribuyeron a la identificación temprana de condiciones de riesgo y al monitoreo continuo de las áreas de trabajo, promoviendo ambientes laborales seguros para todos los colaboradores del edificio.\n\n• Las ${indMes.length} capacitación(es) realizadas fortalecieron la cultura de prevención y el conocimiento del personal frente a los procedimientos de seguridad y emergencias establecidos en el SG-SST.`;
+    const conclusiones = `• Cumplimiento del período: ${cumpTexto}, con ${totalActs} actividad(es) ejecutada(s) conforme al Plan Anual SST ${anio}.\n\n• ${analInsp.itemsFallidos.length > 0 ? `Persisten ${analInsp.itemsFallidos.length} no conformidad(es) pendientes de cierre (ver Hallazgos).` : "No se identificaron no conformidades pendientes de cierre."} No se reportaron accidentes de trabajo ni enfermedades laborales en el período.`;
     document.getElementById("txtConclusiones").value = conclusiones;
 
     // ════════════════════
     //  5. RECOMENDACIONES
     // ════════════════════
-    let recomendaciones = `Con el propósito de fortalecer el SG-SST de la Propiedad Horizontal Convivienda I, se presentan las siguientes recomendaciones para el período de ${MESES[(mes+1)%12]} de ${mes===11 ? anio+1 : anio}:\n\n`;
+    let recomendaciones = "";
     if (analInsp.itemsFallidos.length > 0) {
-      recomendaciones += `• Priorizar el cierre de las no conformidades identificadas en las inspecciones de ${mesNom}: ${analInsp.itemsFallidos.map(i=>i.label).join("; ")}. Establecer responsables y fechas límite para la implementación de medidas correctivas.\n\n`;
+      recomendaciones += `• Cerrar las no conformidades de ${mesNom}: ${analInsp.itemsFallidos.map(i=>i.label).join("; ")}. Asignar responsable y fecha límite.\n\n`;
     }
     if (analInsp.nivelMaximo === "Crítico" || analInsp.nivelMaximo === "Alto") {
-      recomendaciones += `• Atender con carácter urgente los hallazgos de nivel "${analInsp.nivelMaximo}" identificados en el período. Estos riesgos requieren intervención inmediata para prevenir accidentes o incidentes de trabajo.\n\n`;
+      recomendaciones += `• Atender con carácter urgente los hallazgos de nivel "${analInsp.nivelMaximo}" identificados en el período.\n\n`;
     }
     if (analInsp.acciones.length > 0) {
-      recomendaciones += `• Dar seguimiento y verificar el cumplimiento de las acciones correctivas propuestas en las inspecciones: ${analInsp.acciones.slice(0,2).join(". ")}.\n\n`;
+      recomendaciones += `• Verificar el cumplimiento de las acciones correctivas propuestas: ${analInsp.acciones.slice(0,2).join(". ")}.\n\n`;
     }
-    recomendaciones += `• Mantener la frecuencia de inspecciones locativas mensuales y de equipos contra incendio de manera trimestral, garantizando el registro oportuno de cada actividad en el sistema de información del SG-SST.\n\n`;
-    recomendaciones += `• Reforzar el programa de capacitaciones con temáticas prioritarias identificadas en la matriz de riesgos, priorizando primeros auxilios básicos, uso de extintores y procedimientos de evacuación.\n\n`;
-    recomendaciones += `• Actualizar la Matriz de Identificación de Peligros, Evaluación y Valoración de Riesgos (IPEVR) incorporando las novedades identificadas en el presente período.\n\n`;
-    recomendaciones += `• Continuar con la ejecución del Plan Anual SST 2026, dando seguimiento mensual al cronograma y asegurando los recursos necesarios para el cumplimiento de los objetivos establecidos.`;
+    if (!recomendaciones) {
+      recomendaciones = `• Mantener la periodicidad de inspecciones y capacitaciones establecida en el Plan Anual SST ${anio}.`;
+    } else {
+      recomendaciones += `• Mantener la periodicidad de inspecciones y capacitaciones establecida en el Plan Anual SST ${anio}.`;
+    }
     document.getElementById("txtRecomendaciones").value = recomendaciones;
 
     setStatus(`✅ Textos generados para <strong>${mesNom} ${anio}</strong> — ${totalActs} actividades encontradas, ${insMes.length} inspección(es) analizada(s), ${analInsp.hallazgosTextos.length} hallazgo(s) identificado(s). Puede editar los textos antes de generar el PDF.`, "success");

@@ -588,41 +588,56 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
     // ════════════════════
     let analisis = "";
 
-    // Supervisiones — síntesis, el detalle fila a fila ya está en la tabla 3.1 del PDF
+    // Supervisiones — una línea por actividad con fecha y hallazgo real
     if (supMes.length > 0) {
-      const areasSet = new Set();
-      supMes.forEach(s => (Array.isArray(s.areas) ? s.areas : [s.areas || "áreas generales"]).forEach(a => areasSet.add(a)));
-      const totalHallNeg = supMes.reduce((acc, s) => acc + (Array.isArray(s.hallazgosNegativos) ? s.hallazgosNegativos.length : (s.hallazgosNegativos ? 1 : 0)), 0);
-      analisis += `SUPERVISIONES DE SEGURIDAD: ${supMes.length} supervisión(es), cubriendo ${[...areasSet].join(", ")}. `;
-      analisis += totalHallNeg > 0
-        ? `Se registraron ${totalHallNeg} observación(es) de mejora (detalle en tabla 3.1).\n\n`
-        : `No se identificaron condiciones de riesgo durante estas visitas.\n\n`;
+      analisis += `SUPERVISIONES DE SEGURIDAD (${supMes.length})\n`;
+      supMes.forEach(s => {
+        const areas = Array.isArray(s.areas) ? s.areas.join(", ") : (s.areas || "áreas generales");
+        const hallNeg = Array.isArray(s.hallazgosNegativos) ? s.hallazgosNegativos.map(h=>h.descripcion||h.texto||h).join("; ") : (s.hallazgosNegativos || "");
+        analisis += `• ${fmtFecha(s)} — Áreas: ${areas}. ${hallNeg ? `Observación: ${hallNeg}.` : "Sin observaciones de mejora."}\n`;
+      });
+      analisis += `\n`;
     } else {
       analisis += `SUPERVISIONES DE SEGURIDAD: no se registraron supervisiones en este período.\n\n`;
     }
 
-    // Inspecciones — síntesis, el checklist completo ya está en la tabla 3.2.1 del PDF
+    // Inspecciones — una línea por actividad con cumplimiento, riesgo y hallazgo; el checklist completo va en la tabla 3.2.1
     if (insMes.length > 0) {
-      analisis += `INSPECCIONES DE INSTALACIONES: ${insMes.length} inspección(es) realizada(s) (${analInsp.locativas.length} locativa(s), ${analInsp.equipos.length} de equipos contra incendio). `;
-      analisis += analInsp.itemsFallidos.length > 0
-        ? `Se identificaron ${analInsp.itemsFallidos.length} ítem(s) no conforme(s) (detalle en tabla 3.2.1 y en Hallazgos).\n\n`
-        : `Todos los ítems evaluados resultaron conformes (detalle en tabla 3.2.1).\n\n`;
+      analisis += `INSPECCIONES DE INSTALACIONES (${insMes.length})\n`;
+      insMes.forEach(ins => {
+        const tipoLabel = ins.tipoInspeccion === "mensual" ? "Locativa" : ins.tipoInspeccion === "trimestral" ? "Equipos CI" : ins.tipoInspeccion || "General";
+        analisis += `• ${fmtFecha(ins)} — ${tipoLabel}, cumplimiento ${ins.cumplimiento || "N/R"}%, riesgo ${ins.nivelRiesgo || "Sin hallazgos"}.`;
+        if (ins.hallazgos && ins.hallazgos !== "Sin hallazgos") analisis += ` ${ins.hallazgos}`;
+        analisis += `\n`;
+      });
+      analisis += `(Checklist completo en tabla 3.2.1)\n\n`;
     } else {
       analisis += `INSPECCIONES DE INSTALACIONES: no se registraron inspecciones en este período.\n\n`;
     }
 
     // Capacitaciones
     if (indMes.length > 0) {
-      const temas = indMes.map(s => s.tema || s.temaCapacitacion || s.titulo || "Tema SST");
-      analisis += `CAPACITACIONES E INDUCCIONES: ${indMes.length} actividad(es) de formación — ${temas.join("; ")}.\n\n`;
+      analisis += `CAPACITACIONES E INDUCCIONES (${indMes.length})\n`;
+      indMes.forEach(s => {
+        const tema = s.tema || s.temaCapacitacion || s.titulo || "Tema SST";
+        const asist = s.asistentes || s.numeroAsistentes || s.participantes || "N/R";
+        analisis += `• ${fmtFecha(s)} — ${tema}. Asistentes: ${asist}.\n`;
+      });
+      analisis += `\n`;
     } else {
       analisis += `CAPACITACIONES E INDUCCIONES: no se registraron capacitaciones en este período.\n\n`;
     }
 
     // Mantenimientos
-    analisis += mantMes.length > 0
-      ? `MANTENIMIENTOS: ${mantMes.length} actividad(es) ejecutada(s) (detalle en tabla 3.4).`
-      : `MANTENIMIENTOS: no se registraron mantenimientos en este período.`;
+    if (mantMes.length > 0) {
+      analisis += `MANTENIMIENTOS (${mantMes.length})\n`;
+      mantMes.forEach(s => {
+        const desc = s.descripcion || s.actividad || s.tipo || "Mantenimiento general";
+        analisis += `• ${fmtFecha(s)} — ${desc}.\n`;
+      });
+    } else {
+      analisis += `MANTENIMIENTOS: no se registraron mantenimientos en este período.`;
+    }
 
     document.getElementById("txtAnalisis").value = analisis;
 

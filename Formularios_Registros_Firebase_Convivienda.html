@@ -401,6 +401,7 @@
             <h1 id="pageTitle">📝 Registros Operacionales Convivienda 1</h1>
             <p id="pageSubtitle">Sistema de Gestión SST 2026</p>
             <button class="back-btn" onclick="window.close()">← Volver al Sistema</button>
+            <a class="back-btn" href="induccion-individual.html" target="_blank" style="text-decoration:none; display:inline-block;">🎓 Abrir Inducción Individual</a>
         </div>
 
         <!-- Navigation Tabs -->
@@ -438,7 +439,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Mes <span class="required">*</span></label>
-                                <select class="form-select" name="mes" required>
+                                <select class="form-select" name="mes" id="mesInduccion" required onchange="cargarAsistentesDesdeIndividual(this.value)">
                                     <option value="">Seleccionar...</option>
                                     <option>Enero 2026</option>
                                     <option>Febrero 2026</option>
@@ -494,21 +495,10 @@
                     </div>
 
                     <div class="form-section">
-                        <h3 class="section-title">Asistentes</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Personal SERDAN <span class="required">*</span></label>
-                                <input type="number" class="form-input" name="personal_serdan" id="serdan" placeholder="Número de asistentes" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Personal SOSA <span class="required">*</span></label>
-                                <input type="number" class="form-input" name="personal_sosa" id="sosa" placeholder="Número de asistentes" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Total Asistentes <span class="required">*</span></label>
-                                <input type="number" class="form-input" name="total_asistentes" id="total" placeholder="Total" readonly>
-                            </div>
-                        </div>
+                        <h3 class="section-title">Asistentes (automático desde Inducción Individual)</h3>
+                        <div class="alert alert-info" id="asistentesInfo">Selecciona el mes arriba para calcular los asistentes según <a href="induccion-individual.html" target="_blank">Inducción Individual</a>.</div>
+                        <input type="hidden" name="total_asistentes" id="total" value="0">
+                        <div id="asistentesDetalle"></div>
                     </div>
 
                     <div class="form-section">
@@ -1310,9 +1300,8 @@
             form.querySelector('[name="duracion"]').value  = data.duracion  || '';
             form.querySelector('[name="responsable"]').value   = data.responsable   || '';
             form.querySelector('[name="temas_tratados"]').value = data.temas_tratados || '';
-            form.querySelector('[name="personal_serdan"]').value = data.personal_serdan || 0;
-            form.querySelector('[name="personal_sosa"]').value   = data.personal_sosa   || 0;
             form.querySelector('[name="total_asistentes"]').value = data.total_asistentes || 0;
+            cargarAsistentesDesdeIndividual(data.mes);
             form.querySelector('[name="observaciones"]').value   = data.observaciones   || '';
             // Checkboxes
             const ev = data.evaluacion || [];
@@ -1332,10 +1321,63 @@
         function cancelarEdicionInduccion() {
             editandoInduccionId = null;
             document.getElementById('formInduccion').reset();
+            document.getElementById('total').value = '0';
+            document.getElementById('asistentesDetalle').innerHTML = '';
             const banner = document.getElementById('bannerEdicionInduccion');
             if (banner) banner.style.display = 'none';
             const btn = document.getElementById('btnSubmitInduccion');
             if (btn) btn.textContent = '💾 Guardar Registro';
+        }
+
+        // Trae de Firebase los trabajadores que aprobaron su Inducción Individual
+        // para el mes seleccionado y calcula el total de asistentes automáticamente.
+        let ultimosAsistentesAprobados = [];
+
+        async function cargarAsistentesDesdeIndividual(mesConAno) {
+            const info = document.getElementById('asistentesInfo');
+            const detalle = document.getElementById('asistentesDetalle');
+            if (!mesConAno) {
+                info.innerHTML = 'Selecciona el mes arriba para calcular los asistentes según <a href="induccion-individual.html" target="_blank">Inducción Individual</a>.';
+                detalle.innerHTML = '';
+                document.getElementById('total').value = '0';
+                ultimosAsistentesAprobados = [];
+                return;
+            }
+
+            const nombreMes = mesConAno.split(' ')[0];
+            info.innerHTML = '⏳ Calculando asistentes...';
+
+            try {
+                const snap = await database.ref(`edificios/${EDIFICIO_ID}/induccionesIndividuales`).once('value');
+                const registros = snap.val() || {};
+                const aprobados = Object.values(registros).filter(r => r.aprobado && r.mes === nombreMes);
+                ultimosAsistentesAprobados = aprobados;
+                document.getElementById('total').value = aprobados.length;
+
+                if (!aprobados.length) {
+                    info.innerHTML = `⚠️ Aún no hay trabajadores capacitados individualmente para ${nombreMes}. El total de asistentes quedará en 0 hasta que completen su inducción en <a href="induccion-individual.html" target="_blank">Inducción Individual</a>.`;
+                    detalle.innerHTML = '';
+                    return;
+                }
+
+                info.innerHTML = `✅ ${aprobados.length} trabajador(es) capacitado(s) individualmente en ${nombreMes}.`;
+                const porEmpresa = {};
+                aprobados.forEach(a => {
+                    const key = a.empresa || 'Sin empresa';
+                    if (!porEmpresa[key]) porEmpresa[key] = [];
+                    porEmpresa[key].push(a);
+                });
+                detalle.innerHTML = Object.entries(porEmpresa).map(([empresa, lista]) => `
+                    <div style="margin-bottom:10px;">
+                        <strong>${empresa} (${lista.length})</strong>
+                        <ul style="margin:4px 0 0 20px;">
+                            ${lista.map(l => `<li>${l.nombre} — C.C. ${l.cedula} — ${l.puntaje}%</li>`).join('')}
+                        </ul>
+                    </div>`).join('');
+            } catch (error) {
+                console.error(error);
+                info.innerHTML = '❌ Error al calcular asistentes: ' + error.message;
+            }
         }
 
         function cargarTablaInducciones() {
@@ -1401,9 +1443,8 @@
                 duracion: formData.get('duracion') || '',
                 responsable: formData.get('responsable') || '',
                 temas_tratados: formData.get('temas_tratados') || '',
-                personal_serdan: parseInt(formData.get('personal_serdan')) || 0,
-                personal_sosa: parseInt(formData.get('personal_sosa')) || 0,
                 total_asistentes: parseInt(formData.get('total_asistentes')) || 0,
+                asistentesLista: ultimosAsistentesAprobados.map(a => ({ nombre: a.nombre, cedula: a.cedula, empresa: a.empresa, puntaje: a.puntaje })),
                 evaluacion: evaluacion,
                 observaciones: formData.get('observaciones') || '',
                 timestamp: new Date().toISOString(),
@@ -1732,21 +1773,6 @@
                     }
                 });
         });
-
-        // Auto-calculate total attendees
-        const serdan = document.querySelectorAll('input[placeholder="Número de asistentes"]')[0];
-        const sosa = document.querySelectorAll('input[placeholder="Número de asistentes"]')[1];
-        const total = document.querySelector('input[placeholder="Total"]');
-
-        if (serdan && sosa && total) {
-            [serdan, sosa].forEach(input => {
-                input.addEventListener('input', () => {
-                    const s = parseInt(serdan.value) || 0;
-                    const o = parseInt(sosa.value) || 0;
-                    total.value = s + o;
-                });
-            });
-        }
 
         // ============================================
         // FIREBASE CONFIGURATION - Convivienda 1

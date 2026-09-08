@@ -987,15 +987,24 @@
                     🗺️ Plan de Evacuación de Emergencia — Edificio Convivienda I
                 </div>
                 <p style="color:var(--text-gray);font-size:0.88rem;margin-bottom:5px;">Haz clic en el mapa para verlo en pantalla completa</p>
-                <div class="emergency-maps-grid" style="grid-template-columns: minmax(300px, 600px); justify-content: center;">
-                    <div class="emergency-map-card" onclick="verMapaCompleto('plano1.png','Plano de Evacuación — Edificio Convivienda I')">
-                        <img src="plano1.png" alt="Plano de Evacuación - Edificio Convivienda I" loading="lazy"
+                <div class="emergency-maps-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 520px)); justify-content: center;">
+                    <div class="emergency-map-card" onclick="verMapaCompleto('plano-primer-piso.png','Plano de Evacuación — Primer piso — Edificio Convivienda I')">
+                        <img src="plano-primer-piso.png" alt="Plano de Evacuación Primer Piso - Edificio Convivienda I" loading="lazy"
                              onerror="this.style.display='none';this.parentElement.querySelector('.map-placeholder').style.display='flex'">
                         <div class="map-placeholder" style="display:none;height:180px;align-items:center;justify-content:center;background:#f8fafc;color:var(--text-gray);font-size:0.9rem;flex-direction:column;gap:10px;">
                             <span style="font-size:3rem;">🗺️</span>
-                            <span>Subir <strong>plano1.png</strong> a GitHub para ver el mapa</span>
+                            <span>Subir <strong>plano-primer-piso.png</strong> a GitHub para ver el mapa</span>
                         </div>
-                        <div class="emergency-map-caption">🏢 Plano de Evacuación — Edificio Convivienda I</div>
+                        <div class="emergency-map-caption">🏢 Primer piso — Recepción</div>
+                    </div>
+                    <div class="emergency-map-card" onclick="verMapaCompleto('plano-sotano.png','Plano de Evacuación — Sótano — Edificio Convivienda I')">
+                        <img src="plano-sotano.png" alt="Plano de Evacuación Sótano - Edificio Convivienda I" loading="lazy"
+                             onerror="this.style.display='none';this.parentElement.querySelector('.map-placeholder').style.display='flex'">
+                        <div class="map-placeholder" style="display:none;height:180px;align-items:center;justify-content:center;background:#f8fafc;color:var(--text-gray);font-size:0.9rem;flex-direction:column;gap:10px;">
+                            <span style="font-size:3rem;">🗺️</span>
+                            <span>Subir <strong>plano-sotano.png</strong> a GitHub para ver el mapa</span>
+                        </div>
+                        <div class="emergency-map-caption">🏢 Sótano</div>
                     </div>
                 </div>
             </div>

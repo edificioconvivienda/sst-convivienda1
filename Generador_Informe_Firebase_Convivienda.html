@@ -387,8 +387,39 @@ async function leerColeccion(ruta) {
 }
 
 // Lee solo de convivienda-1
+// ─────────────────────────────────────────────────────────────
+// Compatibilidad con el esquema legado de inspecciones de Convivienda I
+// (nivel_riesgo, tipo, checklist_locativa/equipos como arreglo de los
+// ítems marcados conformes) — lo normaliza al esquema que usa el resto
+// del portafolio (nivelRiesgo, tipoInspeccion, checklist_* como objeto
+// {clave: boolean}), que es el que espera el resto de este generador.
+// Los registros que ya vengan en el esquema nuevo pasan sin cambios.
+// ─────────────────────────────────────────────────────────────
+function normalizarLabelChecklist(s) {
+  return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function convertirChecklistLegado(items, mapa) {
+  const marcados = (Array.isArray(items) ? items : []).map(normalizarLabelChecklist);
+  const resultado = {};
+  Object.entries(mapa).forEach(([clave, label]) => {
+    resultado[clave] = marcados.includes(normalizarLabelChecklist(label));
+  });
+  return resultado;
+}
+
+function normalizarInspeccion(ins) {
+  const out = Object.assign({}, ins);
+  if (out.nivelRiesgo === undefined && out.nivel_riesgo !== undefined) out.nivelRiesgo = out.nivel_riesgo;
+  if (out.tipoInspeccion === undefined && out.tipo !== undefined) out.tipoInspeccion = out.tipo;
+  if (Array.isArray(out.checklist_locativa)) out.checklist_locativa = convertirChecklistLegado(out.checklist_locativa, CHECKLIST_LOCATIVA);
+  if (Array.isArray(out.checklist_equipos)) out.checklist_equipos = convertirChecklistLegado(out.checklist_equipos, CHECKLIST_EQUIPOS);
+  return out;
+}
+
 async function leerColeccionEdificio(coleccion) {
-  return leerColeccion(`edificios/${EDIFICIO_ID}/${coleccion}`);
+  const datos = await leerColeccion(`edificios/${EDIFICIO_ID}/${coleccion}`);
+  return coleccion === "inspecciones" ? datos.map(normalizarInspeccion) : datos;
 }
 
 function extraerFecha(obj) {
@@ -610,7 +641,7 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
       analisis += `INSPECCIONES DE INSTALACIONES (${insMes.length})\n`;
       insMes.forEach(ins => {
         const tipoLabel = ins.tipoInspeccion === "mensual" ? "Locativa" : ins.tipoInspeccion === "trimestral" ? "Equipos CI" : ins.tipoInspeccion || "General";
-        analisis += `• ${fmtFecha(ins)} — ${tipoLabel}, cumplimiento ${ins.cumplimiento || "N/R"}%, riesgo ${ins.nivelRiesgo || "Sin hallazgos"}.`;
+        analisis += `• ${fmtFecha(ins)} — ${tipoLabel}, cumplimiento ${ins.cumplimiento ? ins.cumplimiento + "%" : "no registrado"}, riesgo ${ins.nivelRiesgo || "Sin hallazgos"}.`;
         if (ins.hallazgos && ins.hallazgos !== "Sin hallazgos") analisis += ` ${ins.hallazgos}`;
         analisis += `\n`;
       });
@@ -624,7 +655,7 @@ Durante ${mesNom} de ${anio} se ejecutaron un total de ${totalActs} actividades 
       analisis += `CAPACITACIONES E INDUCCIONES (${indMes.length})\n`;
       indMes.forEach(s => {
         const tema = s.tema || s.temaCapacitacion || s.titulo || "Tema SST";
-        const asist = s.asistentes || s.numeroAsistentes || s.participantes || "N/R";
+        const asist = s.asistentes || s.numeroAsistentes || s.participantes || s.totalAsistentes || s.total_asistentes || "no registrado";
         analisis += `• ${fmtFecha(s)} — ${tema}. Asistentes: ${asist}.\n`;
       });
       analisis += `\n`;
@@ -1069,9 +1100,9 @@ async function construirPDF() {
         const tipoLabel = ins.tipoInspeccion==="mensual"?"Locativa":ins.tipoInspeccion==="trimestral"?"Equipos CI":ins.tipoInspeccion||"General";
         return [
           fmtFecha(ins), tipoLabel,
-          (ins.cumplimiento||"N/R") + (ins.cumplimiento?"%":""),
+          ins.cumplimiento ? ins.cumplimiento + "%" : "No registrado",
           ins.nivelRiesgo || "Sin hallazgos",
-          ins.estado || "N/R",
+          ins.estado || "No registrado",
           ins.hallazgos || "Sin hallazgos",
         ];
       }),
@@ -1102,7 +1133,7 @@ async function construirPDF() {
           fecha,
           tipo === "trimestral" ? "Equipos CI" : "Locativa",
           label,
-          val === true ? "Conforme" : val === false ? "No conforme" : "N/E"
+          val === true ? "Conforme" : val === false ? "No conforme" : "Sin evaluar"
         ]);
       });
     });
@@ -1136,8 +1167,8 @@ async function construirPDF() {
       body: indMes.map(s => [
         fmtFecha(s),
         s.tema || s.temaCapacitacion || s.titulo || "Tema SST",
-        String(s.asistentes || s.numeroAsistentes || s.participantes || "N/R"),
-        String(s.duracion || s.horas || "N/R"),
+        String(s.asistentes || s.numeroAsistentes || s.participantes || s.totalAsistentes || s.total_asistentes || "No registrado"),
+        String(s.duracion || s.horas || "No registrado"),
       ]),
       headStyles: { fillColor: C_MED, textColor: C_BLANC, fontStyle:"bold", fontSize:9 },
       bodyStyles: { fontSize:9, cellPadding:4 },
@@ -1159,9 +1190,9 @@ async function construirPDF() {
       head: [["Fecha","Tipo","Descripción","Responsable"]],
       body: mantMes.map(s => [
         fmtFecha(s),
-        s.tipo || s.tipoMantenimiento || "N/R",
+        s.tipo || s.tipoMantenimiento || "No registrado",
         s.descripcion || s.actividad || s.detalle || "Sin descripción",
-        s.responsable || s.tecnico || "N/R",
+        s.responsable || s.tecnico || "No registrado",
       ]),
       headStyles: { fillColor: C_MED, textColor: C_BLANC, fontStyle:"bold", fontSize:9 },
       bodyStyles: { fontSize:9, cellPadding:4 },

@@ -1822,9 +1822,15 @@
         // ═══════════════════════════════════════════════════════════════
         // DASHBOARD — BARRAS PAT
         // ═══════════════════════════════════════════════════════════════
+        /* Lee solo los apartados que muestra el panel (el nodo completo del edificio no es público) */
+        function leerResumenConv() {
+            const nodos = ['supervisiones', 'inspecciones', 'inducciones', 'mantenimientos'];
+            return Promise.all(nodos.map(n => database.ref(`edificios/${EDIFICIO_ID}/${n}`).once('value')))
+                .then(snaps => { const data = {}; nodos.forEach((n, i) => { data[n] = snaps[i].val(); }); return data; });
+        }
+
         function actualizarDashboard2026() {
-            database.ref(`edificios/${EDIFICIO_ID}`).once('value').then(snapshot => {
-                const data = snapshot.val() || {};
+            leerResumenConv().then(data => {
                 const supervisiones  = data.supervisiones  ? Object.values(data.supervisiones)  : [];
                 const inspecciones   = data.inspecciones   ? Object.values(data.inspecciones)   : [];
                 const inducciones    = data.inducciones    ? Object.values(data.inducciones)     : [];
@@ -1879,8 +1885,7 @@
         // BADGES DE EJECUCIÓN
         // ═══════════════════════════════════════════════════════════════
         function actualizarBadgesEjecucion() {
-            database.ref(`edificios/${EDIFICIO_ID}`).once('value').then(snapshot => {
-                const data = snapshot.val() || {};
+            leerResumenConv().then(data => {
                 const supervisiones  = data.supervisiones  ? Object.values(data.supervisiones)  : [];
                 const inspecciones   = data.inspecciones   ? Object.values(data.inspecciones)   : [];
                 const inducciones    = data.inducciones    ? Object.values(data.inducciones)     : [];
@@ -1923,8 +1928,7 @@
         // TABLA MENSUAL EJECUCIÓN
         // ═══════════════════════════════════════════════════════════════
         function actualizarTablaEjecucion() {
-            database.ref(`edificios/${EDIFICIO_ID}`).once('value').then(snapshot => {
-                const data = snapshot.val() || {};
+            leerResumenConv().then(data => {
                 const supervisiones  = data.supervisiones  ? Object.values(data.supervisiones)  : [];
                 const inspecciones   = data.inspecciones   ? Object.values(data.inspecciones)   : [];
                 const inducciones    = data.inducciones    ? Object.values(data.inducciones)     : [];

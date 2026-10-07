@@ -7,6 +7,8 @@
 
     <!-- Firebase Scripts (v9 compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="sst-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
@@ -1586,8 +1588,8 @@
         <div class="modal-content">
             <h2 class="modal-title">🔐 Acceso Privado</h2>
             <div class="form-group">
-                <label class="form-label">Usuario</label>
-                <input type="text" id="loginUser" class="form-input" placeholder="Ingresa tu usuario"
+                <label class="form-label">Correo</label>
+                <input type="email" id="loginUser" class="form-input" placeholder="Tu correo de Compliance Pro"
                        onkeypress="if(event.key==='Enter') attemptLogin()">
             </div>
             <div class="form-group">
@@ -1625,6 +1627,7 @@
         // LOGIN
         // ═══════════════════════════════════════════════════════════════
         let isLoggedIn = localStorage.getItem('sst_conv1_admin') === 'true';
+        document.addEventListener('sst-auth', e => { if (!e.detail && isLoggedIn) logout(); });
         let pendingSection = null;
 
         window.onload = function() {
@@ -1647,11 +1650,11 @@
             iniciarNotificacionesConv();
         };
 
-        function attemptLogin() {
+        async function attemptLogin() {
             const username = document.getElementById('loginUser').value;
             const password = document.getElementById('loginPass').value;
 
-            if (username === 'c3madriz' && password === 'convivienda2026') {
+            if (await sstAuth.entrar(username, password)) {
                 isLoggedIn = true;
                 localStorage.setItem('sst_conv1_admin', 'true');
                 document.getElementById('loginModal').classList.remove('active');
@@ -1683,7 +1686,7 @@
                 actualizarPanelAccionesConv();
                 iniciarNotificacionesConv();
             } else {
-                alert('❌ Credenciales incorrectas');
+                alert('❌ ' + sstAuth.ultimoError);
             }
         }
 
@@ -1697,6 +1700,7 @@
         function logout() {
             isLoggedIn = false;
             localStorage.removeItem('sst_conv1_admin');
+            if (window.sstAuth) sstAuth.salir();
             location.reload();
         }
 
